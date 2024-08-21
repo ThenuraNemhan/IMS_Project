@@ -1,0 +1,22 @@
+/* src/index.css or src/App.css */
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+
+/* app.css or any other CSS file */
+.select-icon-container {
+    position: relative;
+  }
+  
+  .select-icon-container select {
+    appearance: none; /* Hide the default dropdown arrow */
+  }
+  
+  .select-icon-container .dropdown-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Ensure clicks on the icon do not interfere with select element */
+  }
+  
