@@ -12,7 +12,7 @@ import {
   faBuilding 
 } from '@fortawesome/free-solid-svg-icons';
 
-function Sidebar() {
+const Sidebar = ({ onContentChange }) => {
   const [isInventoryOpen, setInventoryOpen] = useState(false);
 
   const toggleInventoryDropdown = () => {
@@ -20,7 +20,7 @@ function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-gray-800 text-white flex-shrink-0">
+    <div className="w-64 bg-gray-800 text-white flex-shrink-0 overflow-y-auto">
       {/* Highlighted IMS Dashboard label */}
       <div className="p-4 text-xl font-bold bg-gray-900">
         IMS Dashboard
@@ -49,22 +49,20 @@ function Sidebar() {
 
           {isInventoryOpen && (
             <div className="pl-8">
-              <NavLink
-                to="/inventory/products"
+              <button
+                onClick={() => onContentChange('products')}
                 className="flex items-center py-2 px-4 rounded hover:bg-gray-700"
-                activeClassName="bg-gray-700"
               >
                 <FontAwesomeIcon icon={faCubes} className="mr-3" />
                 Products
-              </NavLink>
-              <NavLink
-                to="/inventory/organizations"
+              </button>
+              <button
+                onClick={() => onContentChange('organizations')}
                 className="flex items-center py-2 px-4 rounded hover:bg-gray-700"
-                activeClassName="bg-gray-700"
               >
                 <FontAwesomeIcon icon={faBuilding} className="mr-3" />
                 Organizations
-              </NavLink>
+              </button>
             </div>
           )}
         </div>
@@ -96,6 +94,6 @@ function Sidebar() {
       </nav>
     </div>
   );
-}
+};
 
 export default Sidebar;

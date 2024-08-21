@@ -1,6 +1,8 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
+/* eslint-disable no-unused-vars */
 import Chart from 'chart.js/auto';
+/* eslint-enable no-unused-vars */
 
 const data = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
