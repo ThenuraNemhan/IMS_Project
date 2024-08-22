@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './SIdebar';
 import Products from '../screens/Products';
+import UserDashboard from '../screens/UserDashboard';
+import AddProduct from '../screens/AddProduct';
 
 const DashboardLayout = () => {
-  const [activeContent, setActiveContent] = useState(''); // State to manage active content
+  const [activeContent, setActiveContent] = useState('user-dashboard'); // Default to 'user-dashboard'
   const [isSidebarOpen, setSidebarOpen] = useState(true); // State to manage sidebar visibility
 
   const handleContentChange = (content) => {
@@ -18,7 +20,11 @@ const DashboardLayout = () => {
   const renderContent = () => {
     switch (activeContent) {
       case 'products':
-        return <Products />;
+        return <Products onAddProductClick={() => handleContentChange('add-product')} />;
+      case 'user-dashboard':
+        return <UserDashboard/>;
+      case 'add-product':
+        return <AddProduct/>
       // Add other cases for different content
       default:
         return <div>Select a content from the sidebar</div>;

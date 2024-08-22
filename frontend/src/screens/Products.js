@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
+//import { Link } from "react-router-dom";
 
 const mockProductData = {
   id: "PID012",
@@ -14,7 +15,7 @@ const mockProductData = {
   image: "https://via.placeholder.com/150", // Replace with actual image URL
 };
 
-function Products() {
+function Products({ onAddProductClick }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleProductClick = (product) => {
@@ -31,7 +32,10 @@ function Products() {
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Products</h1>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+          <button 
+            onClick={onAddProductClick} 
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+          >
             Add Product
           </button>
         </div>
@@ -74,6 +78,7 @@ function Products() {
               <tr>
                 <th className="py-2 px-4 border-b">ID</th>
                 <th className="py-2 px-4 border-b">Product Name</th>
+                <th className="py-2 px-4 border-b">Product Image</th>
                 <th className="py-2 px-4 border-b">Product Description</th>
                 <th className="py-2 px-4 border-b">Category</th>
                 <th className="py-2 px-4 border-b">Unit</th>
@@ -90,6 +95,13 @@ function Products() {
               >
                 <td className="py-2 px-4">PID012</td>
                 <td className="py-2 px-4">Product 1</td>
+                <td className="py-2 px-4">
+                  <img
+                    src={mockProductData.image}
+                    alt={mockProductData.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </td>
                 <td className="py-2 px-4">Sample Description</td>
                 <td className="py-2 px-4">Flooring</td>
                 <td className="py-2 px-4">Bag</td>
@@ -108,6 +120,13 @@ function Products() {
               >
                 <td className="py-2 px-4">PID012</td>
                 <td className="py-2 px-4">Product 1</td>
+                <td className="py-2 px-4">
+                  <img
+                    src={mockProductData.image}
+                    alt={mockProductData.name}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </td>
                 <td className="py-2 px-4">Sample Description</td>
                 <td className="py-2 px-4">Flooring</td>
                 <td className="py-2 px-4">Bag</td>
@@ -127,7 +146,7 @@ function Products() {
         {/* Popup for Product Details */}
         {selectedProduct && (
           <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3 relative">
+            <div className="bg-white p-8 rounded-lg shadow-lg w-full md:w-2/3 lg:w-1/2 relative">
               <button
                 onClick={handleClosePopup}
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -138,9 +157,9 @@ function Products() {
                 <img
                   src={selectedProduct.image}
                   alt={selectedProduct.name}
-                  className="w-auto h-auto rounded-lg"
+                  className="w-1/2 h-auto rounded-lg"
                 />
-                <div className="w-2/3 pl-4">
+                <div className="w-1/2 pl-4">
                   <h2 className="text-xl font-semibold mb-4">
                     {selectedProduct.name}
                   </h2>

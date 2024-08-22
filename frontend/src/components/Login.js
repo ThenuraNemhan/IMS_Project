@@ -56,7 +56,7 @@ function Login() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-sm p-8 bg-white shadow-lg rounded-lg">
         <div className="text-center mb-6">
-          <img src="/logo512.png" alt="logo" className="mx-auto h-12" />
+          <img src="/IMS.png" alt="logo" className="mx-auto h-12" />
           <h1 className="text-2xl font-semibold mt-4">Welcome Back</h1>
           <p className="text-gray-600 mt-2">Sign in to continue</p>
         </div>

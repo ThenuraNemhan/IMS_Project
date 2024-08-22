@@ -47,7 +47,7 @@ function Navbar({ toggleSidebar, isSidebarOpen }) {
 
           <div>
             <button className="flex items-center bg-white border border-gray-300 rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <img
+            <img
                 src={profileImage}
                 alt="Profile"
                 className="w-8 h-8 rounded-full mr-2"
