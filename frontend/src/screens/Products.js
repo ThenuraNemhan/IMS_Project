@@ -32,8 +32,8 @@ function Products({ onAddProductClick }) {
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold">Products</h1>
-          <button 
-            onClick={onAddProductClick} 
+          <button
+            onClick={onAddProductClick}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg"
           >
             Add Product
@@ -76,15 +76,31 @@ function Products({ onAddProductClick }) {
             {/*----Table Start---- */}
             <thead className="bg-gray-100">
               <tr>
-                <th className="py-2 px-4 border-b">ID</th>
-                <th className="py-2 px-4 border-b">Product Name</th>
-                <th className="py-2 px-4 border-b">Product Image</th>
-                <th className="py-2 px-4 border-b">Product Description</th>
-                <th className="py-2 px-4 border-b">Category</th>
-                <th className="py-2 px-4 border-b">Unit</th>
-                <th className="py-2 px-4 border-b">Stock Today</th>
-                <th className="py-2 px-4 border-b">Price</th>
-                <th className="py-2 px-4 border-b">Status</th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">ID</th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Product Name
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Product Image
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Product Description
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Category
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Unit
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Stock Today
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Price
+                </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -93,21 +109,21 @@ function Products({ onAddProductClick }) {
                 className="border-b hover:bg-gray-50 cursor-pointer"
                 onClick={() => handleProductClick(mockProductData)}
               >
-                <td className="py-2 px-4">PID012</td>
-                <td className="py-2 px-4">Product 1</td>
-                <td className="py-2 px-4">
+                <td className="py-2 px-4 text-sm">PID012</td>
+                <td className="py-2 px-4 text-sm">Product 1</td>
+                <td className="py-2 px-4 text-sm">
                   <img
                     src={mockProductData.image}
                     alt={mockProductData.name}
                     className="w-16 h-16 object-cover rounded"
                   />
                 </td>
-                <td className="py-2 px-4">Sample Description</td>
-                <td className="py-2 px-4">Flooring</td>
-                <td className="py-2 px-4">Bag</td>
-                <td className="py-2 px-4">50</td>
-                <td className="py-2 px-4">LKR:2500/=</td>
-                <td className="py-2 px-4">
+                <td className="py-2 px-4 text-sm">Sample Description</td>
+                <td className="py-2 px-4 text-sm">Flooring</td>
+                <td className="py-2 px-4 text-sm">Bag</td>
+                <td className="py-2 px-4 text-sm">50</td>
+                <td className="py-2 px-4 text-sm">LKR:2500/=</td>
+                <td className="py-2 px-4 text-sm">
                   <span className="bg-green-500 text-white px-2 py-1 rounded-sm">
                     Active
                   </span>
@@ -118,21 +134,21 @@ function Products({ onAddProductClick }) {
                 className="border-b hover:bg-gray-50 cursor-pointer"
                 onClick={() => handleProductClick(mockProductData)}
               >
-                <td className="py-2 px-4">PID012</td>
-                <td className="py-2 px-4">Product 1</td>
-                <td className="py-2 px-4">
+                <td className="py-2 px-4 text-sm">PID012</td>
+                <td className="py-2 px-4 text-sm">Product 1</td>
+                <td className="py-2 px-4 text-sm">
                   <img
                     src={mockProductData.image}
                     alt={mockProductData.name}
                     className="w-16 h-16 object-cover rounded"
                   />
                 </td>
-                <td className="py-2 px-4">Sample Description</td>
-                <td className="py-2 px-4">Flooring</td>
-                <td className="py-2 px-4">Bag</td>
-                <td className="py-2 px-4">50</td>
-                <td className="py-2 px-4">LKR:2500/=</td>
-                <td className="py-2 px-4">
+                <td className="py-2 px-4 text-sm">Sample Description</td>
+                <td className="py-2 px-4 text-sm">Flooring</td>
+                <td className="py-2 px-4 text-sm">Bag</td>
+                <td className="py-2 px-4 text-sm">50</td>
+                <td className="py-2 px-4 text-sm">LKR:2500/=</td>
+                <td className="py-2 px-4 text-sm">
                   <span className="bg-red-500 text-white px-2 py-1 rounded-sm">
                     Inactive
                   </span>

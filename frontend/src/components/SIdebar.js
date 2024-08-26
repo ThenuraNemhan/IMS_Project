@@ -10,7 +10,10 @@ import {
   faChevronDown,
   faCubes,
   faBuilding,
+  faBalanceScale,
+  faUserTie,
 } from "@fortawesome/free-solid-svg-icons";
+
 
 const Sidebar = ({ onContentChange }) => {
   const [isInventoryOpen, setInventoryOpen] = useState(false);
@@ -80,6 +83,17 @@ const Sidebar = ({ onContentChange }) => {
                 Products
               </button>
               <button
+                onClick={() => handleMenuItemClick("units")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "units"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faBalanceScale} className="mr-3" />
+                Units
+              </button>
+              <button
                 onClick={() => handleMenuItemClick("organizations")}
                 className={`flex items-center py-2 px-4 rounded w-full text-left ${
                   activeMenuItem === "organizations"
@@ -89,6 +103,17 @@ const Sidebar = ({ onContentChange }) => {
               >
                 <FontAwesomeIcon icon={faBuilding} className="mr-3" />
                 Organizations
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("customers")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "customers"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faUserTie} className="mr-3" />
+                Customers
               </button>
             </div>
           )}

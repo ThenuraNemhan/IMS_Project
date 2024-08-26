@@ -8,7 +8,7 @@ function Breadcrumb({ paths, onClick }) {
         <span key={index} className="flex items-center">
           {index > 0 && <FaChevronRight className="mx-2" />}
           <span
-            className={path.isActive ? "text-blue-600 flex items-center cursor-pointer" : "flex items-center cursor-pointer"}
+            className={`flex items-center cursor-pointer ${path.isActive ? "text-blue-600" : "text-gray-500"}`}
             onClick={() => onClick(path.content)}
           >
             {path.icon && <span className="mr-2">{path.icon}</span>}
