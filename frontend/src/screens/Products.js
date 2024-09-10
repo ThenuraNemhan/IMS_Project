@@ -1,22 +1,65 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
-//import { Link } from "react-router-dom";
-
-const mockProductData = {
-  id: "PID012",
-  name: "Product 1",
-  description: "Sample Description",
-  category: "Flooring",
-  unit: "Bag",
-  stock: 50,
-  price: "LKR:2500/=",
-  status: "Active",
-  image: "https://via.placeholder.com/150", // Replace with actual image URL
-};
+import { FaEdit } from "react-icons/fa"; // Import the edit icon
+import axios from "axios";
+import Grid from "../components/Grid"; // Import the Grid component
+import { toast } from "react-toastify";
 
 function Products({ onAddProductClick }) {
+  const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [selectedUnit, setSelectedUnit] = useState(""); // New state for selected unit
+  const [units, setUnits] = useState([]); // State to hold units fetched from API
+  const [sort, setSort] = useState({ field: "product_name", direction: "asc" });
+
+  useEffect(() => {
+    // Fetch products from the API when the component mounts
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/products"
+        );
+        // Map the products to include an id field
+        const productsWithId = response.data.products.map((product) => ({
+          ...product,
+          id: product.product_code, // Assign _id to id
+        }));
+        setProducts(productsWithId); // Set products with id field
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    // Fetch categories from the API when the component mounts
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/categories"
+        );
+        setCategories(response.data.categories); // Assuming the response has a `categories` field
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    // Fetch units from the API when the component mounts
+    const fetchUnits = async () => {
+      try {
+        const response = await axios.get("http://192.168.56.1:5000/api/units");
+        setUnits(response.data.units); // Assuming the response has a `units` field
+      } catch (error) {
+        console.error("Error fetching units:", error);
+      }
+    };
+
+    fetchProducts();
+    fetchCategories();
+    fetchUnits();
+  }, []);
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
@@ -24,6 +67,131 @@ function Products({ onAddProductClick }) {
 
   const handleClosePopup = () => {
     setSelectedProduct(null);
+  };
+
+  const handleSortChange = (field) => {
+    setSort((prev) => ({
+      field,
+      direction: prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const filteredProducts = products
+    .filter(
+      (product) =>
+        product.product_name &&
+        product.product_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (a[sort.field] < b[sort.field])
+        return sort.direction === "asc" ? -1 : 1;
+      if (a[sort.field] > b[sort.field])
+        return sort.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 100 }, // Use id here
+    { field: "product_name", headerName: "Product Name", width: 150 },
+    { field: "product_images", headerName: "Product Image", width: 150 },
+    {
+      field: "product_description",
+      headerName: "Product Description",
+      width: 200,
+    },
+    {
+      field: "product_category",
+      headerName: "Category",
+      width: 150,
+      renderCell: (params) => (
+        <span>
+          {params.row.product_category
+            ? params.row.product_category.category_name
+            : "N/A"}
+        </span>
+      ),
+    },
+    {
+      field: "unit",
+      headerName: "Unit",
+      width: 100,
+      renderCell: (params) => (
+        <span>{params.row.unit ? params.row.unit.unit_name : "N/A"}</span>
+      ),
+    },
+    { field: "product_countInStock", headerName: "Stock Today", width: 150 },
+    { field: "product_price", headerName: "Price", width: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 100,
+      renderCell: (params) => {
+        const status = params.row.status;
+        const statusClass =
+          status === "Active"
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white";
+
+        return (
+          <span className={`px-2 py-1 rounded-sm ${statusClass}`}>
+            {status}
+          </span>
+        );
+      },
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <div className="flex justify-left items-left w-10 h-10">
+          <button
+            onClick={() => handleProductClick(params.row)}
+            className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
+          >
+            <FaEdit className="text-white mr-2" />
+            Edit
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const handleUpdateProduct = async () => {
+    try {
+      await axios.put(
+        `http://192.168.56.1:5000/api/products/update/${selectedProduct.product_code}`,
+        {
+          ...selectedProduct,
+          product_category: selectedCategory,
+          unit: selectedUnit,
+        }
+      );
+      toast.success("Product Updated Succesfully");
+      setSelectedProduct(null);
+      // Refresh the products list
+      const response = await axios.get("http://192.168.56.1:5000/api/products");
+      setProducts(response.data.products);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Error Updating Product");
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    try {
+      await axios.delete(
+        `http://192.168.56.1:5000/api/products/delete/${selectedProduct.product_code}`
+      );
+      toast.success("Product Deleted Succesfully");
+      setSelectedProduct(null);
+      // Refresh the products list
+      const response = await axios.get("http://192.168.56.1:5000/api/products");
+      setProducts(response.data.products);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Error Deleting Product");
+    }
   };
 
   return (
@@ -40,13 +208,15 @@ function Products({ onAddProductClick }) {
           </button>
         </div>
 
-        {/* Product List */}
-        <div className="bg-white p-4 rounded-lg shadow">
+        {/* Search and Filter */}
+        <div className="bg-white p-4 rounded-lg shadow mb-8">
           <div className="flex justify-between mb-4 items-center">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search product here"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -60,103 +230,20 @@ function Products({ onAddProductClick }) {
                 <span className="mr-2">Sort</span>
                 <FontAwesomeIcon icon={faFilter} className="text-gray-700" />
               </label>
-              <select className="px-4 py-2 border border-gray-300 rounded-lg w-1/3 h-10">
-                <option>Flooring</option>
-                <option>Masonary</option>
-                <option>Water Proofing</option>
-              </select>
-              <select className="px-4 py-2 border border-gray-300 rounded-lg w-1/3 h-10">
-                <option>Active</option>
-                <option>Inactive</option>
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg w-full h-10"
+                onChange={(e) => handleSortChange(e.target.value)}
+              >
+                <option value="">Select </option>
+                <option value="product_name">Product Name</option>
+                <option value="product_price">Price</option>
+                {/* Add more sorting options if needed */}
               </select>
             </div>
           </div>
 
-          <table className="w-full text-center border-collapse">
-            {/*----Table Start---- */}
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border-b text-sm md:text-base">ID</th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Product Name
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Product Image
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Product Description
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Category
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Unit
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Stock Today
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Price
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Example Product */}
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleProductClick(mockProductData)}
-              >
-                <td className="py-2 px-4 text-sm">PID012</td>
-                <td className="py-2 px-4 text-sm">Product 1</td>
-                <td className="py-2 px-4 text-sm">
-                  <img
-                    src={mockProductData.image}
-                    alt={mockProductData.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                </td>
-                <td className="py-2 px-4 text-sm">Sample Description</td>
-                <td className="py-2 px-4 text-sm">Flooring</td>
-                <td className="py-2 px-4 text-sm">Bag</td>
-                <td className="py-2 px-4 text-sm">50</td>
-                <td className="py-2 px-4 text-sm">LKR:2500/=</td>
-                <td className="py-2 px-4 text-sm">
-                  <span className="bg-green-500 text-white px-2 py-1 rounded-sm">
-                    Active
-                  </span>
-                </td>
-              </tr>
-              {/* Add more products here */}
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleProductClick(mockProductData)}
-              >
-                <td className="py-2 px-4 text-sm">PID012</td>
-                <td className="py-2 px-4 text-sm">Product 1</td>
-                <td className="py-2 px-4 text-sm">
-                  <img
-                    src={mockProductData.image}
-                    alt={mockProductData.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
-                </td>
-                <td className="py-2 px-4 text-sm">Sample Description</td>
-                <td className="py-2 px-4 text-sm">Flooring</td>
-                <td className="py-2 px-4 text-sm">Bag</td>
-                <td className="py-2 px-4 text-sm">50</td>
-                <td className="py-2 px-4 text-sm">LKR:2500/=</td>
-                <td className="py-2 px-4 text-sm">
-                  <span className="bg-red-500 text-white px-2 py-1 rounded-sm">
-                    Inactive
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {/*----Table End---- */}
+          {/* Product Grid */}
+          <Grid rows={filteredProducts} columns={columns} />
         </div>
 
         {/* Popup for Product Details */}
@@ -171,23 +258,30 @@ function Products({ onAddProductClick }) {
               </button>
               <div className="flex mb-4">
                 <img
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
+                  src={selectedProduct.product_images} // Assuming images is an array
+                  alt={selectedProduct.product_name}
                   className="w-1/2 h-auto rounded-lg"
                 />
                 <div className="w-1/2 pl-4">
                   <h2 className="text-xl font-semibold mb-4">
-                    {selectedProduct.name}
+                    {selectedProduct.product_name}
                   </h2>
                   <div className="mb-4">
                     <label className="block text-gray-700">Category</label>
                     <select
-                      value={selectedProduct.category}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
                     >
-                      <option>Flooring</option>
-                      <option>Masonary</option>
-                      <option>Water Proofing</option>
+                      <option value="">Select Product Category</option>
+                      {categories.map((category) => (
+                        <option
+                          key={category._id}
+                          value={category.category_name}
+                        >
+                          {category.category_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="mb-4">
@@ -196,37 +290,51 @@ function Products({ onAddProductClick }) {
                     </label>
                     <input
                       type="text"
-                      value={selectedProduct.description}
+                      value={selectedProduct.product_description}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) => setSelectedProduct({
+                        ...selectedProduct,
+                        product_description: e.target.value
+                      })}
                     />
                   </div>
                   <div className="mb-4">
                     <label className="block text-gray-700">Unit</label>
                     <select
-                      value={selectedProduct.unit}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={selectedUnit}
+                      onChange={(e) => setSelectedUnit(e.target.value)}
                     >
-                      <option>Kg</option>
-                      <option>g</option>
-                      <option>Nos</option>
-                      <option>Bag</option>
-                      <option>Pkt</option>
+                      <option value="">Select Product Unit</option>
+                      {units.map((unit) => (
+                        <option key={unit._id} value={unit.unit_name}>
+                          {unit.unit_name}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="mb-4">
                     <label className="block text-gray-700">Stock Today</label>
                     <input
                       type="number"
-                      value={selectedProduct.stock}
+                      value={selectedProduct.product_countInStock}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) => setSelectedProduct({
+                        ...selectedProduct,
+                        product_countInStock: e.target.value
+                      })}
                     />
                   </div>
                   <div className="mb-4">
                     <label className="block text-gray-700">Price</label>
                     <input
                       type="text"
-                      value={selectedProduct.price}
+                      value={selectedProduct.product_price}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) => setSelectedProduct({
+                        ...selectedProduct,
+                        product_price: e.target.value
+                      })}
                     />
                   </div>
                   <div className="mb-4">
@@ -235,14 +343,21 @@ function Products({ onAddProductClick }) {
                       value={selectedProduct.status}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                     >
+                      <option value="">Select Status</option>
                       <option>Active</option>
                       <option>Inactive</option>
                     </select>
                   </div>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">
+                  <button
+                    onClick={handleDeleteProduct}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                  >
                     Delete
                   </button>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                  <button
+                    onClick={handleUpdateProduct}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
                     Update
                   </button>
                 </div>

@@ -1,14 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-
-const mockUnitData = {
-  code: "UID012",
-  name: "g",
-};
+import Grid from "../components/Grid"; // Import the Grid component
+import { FaEdit } from "react-icons/fa";
 
 function Units({ onAddUnitClick }) {
+  const [units, setUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sort] = useState({ field: 'unit_name', direction: 'asc' });
+
+  useEffect(() => {
+    // Fetch units from the API when the component mounts
+    const fetchUnits = async () => {
+      try {
+        const response = await axios.get("http://192.168.56.1:5000/api/units");
+        // Map the units to include an id field
+        const unitsWithId = response.data.units.map(unit => ({
+          ...unit,
+          id: unit.unit_code // Assign _id to id
+        }));
+        setUnits(unitsWithId); // // Set units with id field
+      } catch (error) {
+        console.error("Error fetching units:", error);
+      }
+    };
+
+    fetchUnits();
+  }, []);
 
   const handleUnitClick = (unit) => {
     setSelectedUnit(unit);
@@ -18,6 +38,44 @@ function Units({ onAddUnitClick }) {
     setSelectedUnit(null);
   };
 
+  // const handleSortChange = (field) => {
+  //   setSort((prev) => ({
+  //     field,
+  //     direction: prev.direction === 'asc' ? 'desc' : 'asc'
+  //   }));
+  // };
+
+  const filteredUnits = units.filter(unit =>
+    unit.unit_name && unit.unit_name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+    .sort((a, b) => {
+      if (a[sort.field] < b[sort.field]) return sort.direction === 'asc' ? -1 : 1;
+      if (a[sort.field] > b[sort.field]) return sort.direction === 'asc' ? 1 : -1;
+      return 0;
+    }
+  );
+
+  const columns = [
+    { field: 'unit_code', headerName: 'ID', width: 90 }, // Use id here
+      { field: 'unit_name', headerName: 'Unit Name', width: 150 },
+      {
+        field: 'action',
+        headerName: 'Action',
+        width: 150,
+        renderCell: (params) => (
+          <div className="flex justify-left items-left w-10 h-10">
+            <button
+              onClick={() => handleUnitClick(params.row)}
+              className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
+            >
+              <FaEdit className="text-white mr-2" />
+              Edit
+            </button>
+          </div>
+        )
+      }
+  ]
+  
   return (
     <div className="flex h-screen">
       {/* Main Content */}
@@ -33,12 +91,15 @@ function Units({ onAddUnitClick }) {
         </div>
 
         {/* Unit List */}
+        {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search units here"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -47,9 +108,9 @@ function Units({ onAddUnitClick }) {
             </div>
           </div>
 
-          <table className="w-full text-center border-collapse">
+          {/* <table className="w-full text-center border-collapse"> */}
             {/*----Table Start---- */}
-            <thead className="bg-gray-100">
+            {/* <thead className="bg-gray-100">
               <tr>
                 <th className="py-2 px-4 border-b text-sm md:text-base">
                   Unit Code
@@ -57,28 +118,27 @@ function Units({ onAddUnitClick }) {
                 <th className="py-2 px-4 border-b text-sm md:text-base">
                   Unit Name
                 </th>
+                <th className="py-2 px-4 border-b text-sm md:text-base">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
-              {/* Example Unit */}
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleUnitClick(mockUnitData)}
-              >
-                <td className="py-2 px-4 text-sm">UID012</td>
-                <td className="py-2 px-4 text-sm">g</td>
-              </tr>
-              {/* Add more units here */}
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleUnitClick(mockUnitData)}
-              >
-                <td className="py-2 px-4 text-sm">UID013</td>
-                <td className="py-2 px-4 text-sm">Kg</td>
-              </tr>
+              {filteredUnits.map((unit) => (
+                <tr
+                  key={unit._id} // Assuming your units have an `_id` field
+                  className="border-b hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleUnitClick(unit)}
+                >
+                  <td className="py-2 px-4 text-sm">{unit._id}</td>
+                  <td className="py-2 px-4 text-sm">{unit.unit_name}</td>
+                </tr>
+              ))}
             </tbody>
-          </table>
+          </table> */}
           {/*----Table End---- */}
+          {/* Product Grid */}
+          <Grid rows={filteredUnits} columns={columns} />
         </div>
 
         {/* Popup for Units Details */}
@@ -94,14 +154,15 @@ function Units({ onAddUnitClick }) {
               <div className="flex mb-4">
                 <div className="w-1/2 pl-4">
                   <h2 className="text-xl font-semibold mb-4">
-                    {selectedUnit.code}
+                    {selectedUnit.unit_code}
                   </h2>
                   <div className="mb-4">
                     <label className="block text-gray-700">Unit Name</label>
                     <input
                       type="text"
-                      value={selectedUnit.name}
+                      value={selectedUnit.unit_name}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      readOnly
                     />
                   </div>
                   <button className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">

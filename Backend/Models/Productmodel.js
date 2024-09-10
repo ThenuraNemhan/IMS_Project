@@ -1,22 +1,30 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const ProductSchema = new mongoose.Schema(
   {
-    product_name: { type: String, required: true, unique: true },
-    product_category: { type: String, required: true },
+    product_code: {type: String, required: true, unique: true},
+    product_name: { type: String, required: true },
+    product_category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
     product_description: { type: String, required: true },
     product_price: { type: Number, required: true },
     product_countInStock: { type: Number, required: true },
-    unit_id: {
+    unit: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Unit", // Reference to the Location model
+      ref: "Unit",
       required: true,
     },
+    images: [{ type: String }], // Array to store image paths
+    productDate: { type: Date },
+    status: {type:String, enum: ['Active', 'Inactive'], default: 'Active' }
   },
   {
     timestamps: true,
   }
 );
 
-const Product = mongoose.model('Product', ProductSchema);
+const Product = mongoose.model("Product", ProductSchema);
 export default Product;

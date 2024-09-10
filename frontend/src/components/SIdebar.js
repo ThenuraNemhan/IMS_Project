@@ -12,6 +12,7 @@ import {
   faBuilding,
   faBalanceScale,
   faUserTie,
+  faTag,
 } from "@fortawesome/free-solid-svg-icons";
 
 
@@ -60,7 +61,7 @@ const Sidebar = ({ onContentChange }) => {
             }`}
           >
             <FontAwesomeIcon icon={faBox} className="mr-3" />
-            Inventory
+            Master Data
             <FontAwesomeIcon
               icon={faChevronDown}
               className={`ml-auto transition-transform ${
@@ -114,6 +115,17 @@ const Sidebar = ({ onContentChange }) => {
               >
                 <FontAwesomeIcon icon={faUserTie} className="mr-3" />
                 Customers
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("product-categories")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "product-categories"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faTag} className="mr-3" />
+                Category
               </button>
             </div>
           )}

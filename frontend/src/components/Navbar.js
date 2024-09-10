@@ -17,7 +17,7 @@ const languages = [
   // Add more languages as needed
 ];
 
-function Navbar({ toggleSidebar, isSidebarOpen }) {
+function Navbar({ toggleSidebar}) {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState("US");
   const [showDropdown, setShowDropdown] = useState(false);

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Navbar from "./Navbar";
 import Sidebar from "./SIdebar";
 import Products from "../screens/Products";
-import UserDashboard from "../screens/UserDashboard";
-import AddProduct from "../screens/AddProduct";
+import UserDashboard from "../screens/UserDashboard.js";
+import AddProduct from "../screens/AddProduct.js";
 import Breadcrumb from "./Breadcrumb"; // Import Breadcrumb
 import {
   FaHome,
@@ -12,6 +12,7 @@ import {
   FaBalanceScale,
   FaBuilding,
   FaUserTie,
+  FaTags,
 } from "react-icons/fa"; // Import icons
 import Units from "../screens/Units";
 import AddUnit from "../screens/AddUnit";
@@ -19,6 +20,8 @@ import Organizations from "../screens/Organizations";
 import AddOrganization from "../screens/AddOrganization";
 import Customers from "../screens/Customers";
 import AddCustomer from "../screens/AddCustomer";
+import ProductCateogry from "../screens/ProductCategory.js";
+import AddProductCategory from "../screens/AddProductCategory.js";
 
 const DashboardLayout = () => {
   const [activeContent, setActiveContent] = useState("user-dashboard"); // Default to 'user-dashboard'
@@ -78,6 +81,10 @@ const DashboardLayout = () => {
         return "Customer";
       case "add-customer":
         return "Add Customer";
+      case "product-categories":
+        return "Product Category";
+      case "add-product-categories":
+        return "Add Product Category";
       default:
         return "Home";
     }
@@ -98,9 +105,13 @@ const DashboardLayout = () => {
       case "add-organization":
         return <FaPlus />;
       case "customers":
-        return <FaUserTie />
+        return <FaUserTie />;
       case "add-customer":
-        return <FaPlus />
+        return <FaPlus />;
+      case "product-categories":
+        return <FaTags />;
+      case "add-product-categories":
+        return <FaPlus />;
       default:
         return <FaHome />;
     }
@@ -134,6 +145,10 @@ const DashboardLayout = () => {
         return (<Customers onAddCustomerClick={() => handleContentChange("add-customer")}/>);
       case "add-customer":
         return <AddCustomer/>;
+      case "product-categories":
+        return <ProductCateogry onAddProductCategoryClick={() => handleContentChange("add-product-categories")}/>;
+      case "add-product-categories":
+        return <AddProductCategory/>;
       default:
         return <div>Select a content from the sidebar</div>;
     }
