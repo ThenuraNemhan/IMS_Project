@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post('/add', uploadFiles.array('images'), addProduct); // Handles multiple file uploads
 router.get('/', getProducts);
-router.put('/update/:id', updateProduct); // Update product by id
-router.delete('/delete/:id', deleteProduct); // Delete product by id
+router.put('/update/:product_code', updateProduct); // Update product by product_code
+router.delete('/delete/:product_code', deleteProduct); // Delete product by product_code
 
 export default router;

@@ -87,7 +87,7 @@ export const getProducts = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { product_code } = req.params;
     const {
       product_name,
       product_category,
@@ -122,8 +122,8 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
+    const updatedProduct = await Product.findOneAndUpdate(
+      { product_code }, // Find by product_code instead of _id
       {
         product_name,
         product_category: categoryDoc._id,
@@ -138,6 +138,10 @@ export const updateProduct = async (req, res) => {
       { new: true }
     ).populate("unit").populate("product_category");
 
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
     res.status(200).json({
       message: "Product updated successfully",
       product: updatedProduct,
@@ -150,9 +154,9 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { product_code } = req.params;
 
-    const deletedProduct = await Product.findByIdAndDelete(id);
+    const deletedProduct = await Product.findOneAndDelete({ product_code });
 
     if (!deletedProduct) {
       return res.status(404).json({ message: "Product not found" });
@@ -167,6 +171,7 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 

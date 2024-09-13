@@ -34,3 +34,52 @@ export const getUnits = async (req, res) => {
       .json({ message: "Error fetching units. Please try again." });
   }
 };
+
+export const updateUnit = async (req, res) => {
+  try {
+    const { unit_code } = req.params;
+    const {
+      unit_name,
+    } = req.body;
+
+    const updatedUnit = await Unit.findOneAndUpdate(
+      { unit_code }, // Find by unit_code instead of _id
+      {
+        unit_name,
+      },
+      { new: true }
+    );
+
+    if (!updatedUnit) {
+      return res.status(404).json({ message: "Unit not found" });
+    }
+
+    res.status(200).json({
+      message: "Unit updated successfully",
+      unit: updatedUnit,
+    });
+  } catch (error) {
+    console.error("Error updating unit:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deletedUnit = async (req, res) => {
+  try {
+    const { unit_code } = req.params;
+
+    const deletedUnit = await Unit.findOneAndDelete({ unit_code });
+
+    if (!deletedUnit) {
+      return res.status(404).json({ message: "Unit not found" });
+    }
+
+    res.status(200).json({
+      message: "Unit deleted successfully",
+      unit: deletedUnit,
+    });
+  } catch (error) {
+    console.error("Error deleting unit:", error);
+    res.status(500).json({ message: error.message });
+  }
+};

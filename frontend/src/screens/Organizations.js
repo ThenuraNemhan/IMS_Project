@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
 import Grid from "../components/Grid"; // Import the Grid component
 import { FaEdit } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function Organizations({ onAddOrganizationClick }) {
   const [organizations, setOrganizations] = useState([]);
@@ -35,7 +36,12 @@ function Organizations({ onAddOrganizationClick }) {
   }, []);
 
   const handleOrganizationClick = (organization) => {
-    setSelectedOrganization(organization);
+    setSelectedOrganization({
+      ...organization,
+      organization_name: organization.organization_name || "",
+      organization_BRN: organization.organization_BRN || "",
+      status: organization.status || "Active",
+    });
   };
 
   const handleClosePopup = () => {
@@ -70,7 +76,24 @@ function Organizations({ onAddOrganizationClick }) {
     { field: "organization_name", headerName: "Organization Name", width: 150 },
     { field: "organization_BRN", headerName: "Organization BRN", width: 200 },
     { field: "owner_name", headerName: "Organization Owner Name", width: 150 },
-    { field: "status", headerName: "Status", width: 100 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 100,
+      renderCell: (params) => {
+        const status = params.row.status;
+        const statusClass =
+          status === "Active"
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white";
+
+        return (
+          <span className={`px-2 py-1 rounded-sm ${statusClass}`}>
+            {status}
+          </span>
+        );
+      },
+    },
     {
       field: "action",
       headerName: "Action",
@@ -88,6 +111,45 @@ function Organizations({ onAddOrganizationClick }) {
       ),
     },
   ];
+
+  const handleUpdateOrganization = async () => {
+    try {
+      await axios.put(
+        `http://192.168.56.1:5000/api/organizations/update/${selectedOrganization.organization_code}`,
+        {
+          ...selectedOrganization,
+        }
+      );
+      toast.success("Customer Updated Succesfully");
+      setSelectedOrganization(null);
+      // Refresh the customer list
+      const response = await axios.get(
+        "http://192.168.56.1:5000/api/organizations"
+      );
+      setOrganizations(response.data.organizations);
+    } catch (error) {
+      console.error("Error updating organization:", error);
+      toast.error("Error Updating Organization");
+    }
+  };
+
+  const handleDeleteOrganization = async () => {
+    try {
+      await axios.delete(
+        `http://192.168.56.1:5000/api/organizations/delete/${selectedOrganization.organization_code}`
+      );
+      toast.success("Organization Deleted Succesfully");
+      setSelectedOrganization(null);
+      // Refresh the Organization list
+      const response = await axios.get(
+        "http://192.168.56.1:5000/api/organizations"
+      );
+      setOrganizations(response.data.organizations);
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+      toast.error("Error Deleting Organization");
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -130,7 +192,6 @@ function Organizations({ onAddOrganizationClick }) {
               >
                 <option value="">Select </option>
                 <option value="organization_name">Organization Name</option>
-                <option value="owner_name">Owners name</option>
                 {/* Add more sorting options if needed */}
               </select>
             </div>
@@ -155,6 +216,7 @@ function Organizations({ onAddOrganizationClick }) {
                   <h2 className="text-xl font-semibold mb-4">
                     {selectedOrganization.organization_name}
                   </h2>
+                  {/*organization BRN */}
                   <div className="mb-4">
                     <label className="block text-gray-700">
                       Organization BRN
@@ -163,6 +225,12 @@ function Organizations({ onAddOrganizationClick }) {
                       type="text"
                       value={selectedOrganization.organization_BRN}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedOrganization({
+                          ...selectedOrganization,
+                          organization_BRN: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="mb-4">
@@ -171,12 +239,24 @@ function Organizations({ onAddOrganizationClick }) {
                       type="text"
                       value={selectedOrganization.owner_name}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedOrganization({
+                          ...selectedOrganization,
+                          owner_name: e.target.value,
+                        })
+                      }
                     />
                   </div>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">
+                  <button
+                    onClick={handleDeleteOrganization}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                  >
                     Delete
                   </button>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                  <button
+                    onClick={handleUpdateOrganization}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
                     Update
                   </button>
                 </div>

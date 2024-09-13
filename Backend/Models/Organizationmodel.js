@@ -6,6 +6,7 @@ const OrganizationSchema = new mongoose.Schema(
     organization_name: { type: String, required: true },
     organization_BRN: { type: String, required: true },
     owner_name: { type: String, required: true },
+    status: {type:String, enum: ['Active', 'Inactive'], default: 'Active' }
   },
   {
     timestamps: true,

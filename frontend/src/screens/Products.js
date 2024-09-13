@@ -62,7 +62,16 @@ function Products({ onAddProductClick }) {
   }, []);
 
   const handleProductClick = (product) => {
-    setSelectedProduct(product);
+    // Ensure that the selected product contains all necessary fields
+    setSelectedProduct({
+      ...product,
+      product_category: product.product_category?._id || "", // Handle nested category
+      unit: product.unit?._id || "", // Handle nested unit
+      product_description: product.product_description || "",
+      product_countInStock: product.product_countInStock || 0,
+      product_price: product.product_price || 0,
+      status: product.status || "Active",
+    });
   };
 
   const handleClosePopup = () => {
@@ -256,98 +265,116 @@ function Products({ onAddProductClick }) {
               >
                 &times;
               </button>
-              <div className="flex mb-4">
-                <img
-                  src={selectedProduct.product_images} // Assuming images is an array
-                  alt={selectedProduct.product_name}
-                  className="w-1/2 h-auto rounded-lg"
-                />
-                <div className="w-1/2 pl-4">
-                  <h2 className="text-xl font-semibold mb-4">
-                    {selectedProduct.product_name}
-                  </h2>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Category</label>
-                    <select
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                      <option value="">Select Product Category</option>
-                      {categories.map((category) => (
-                        <option
-                          key={category._id}
-                          value={category.category_name}
-                        >
-                          {category.category_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">
-                      Product Description
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedProduct.product_description}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      onChange={(e) => setSelectedProduct({
+              <div className="w-full">
+                <h2 className="text-xl font-semibold mb-4">
+                  {selectedProduct.product_name}
+                </h2>
+
+                {/* Category Dropdown */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Category</label>
+                  <select
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    <option value="">Select Product Category</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category.category_name}>
+                        {category.category_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Product Description */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">
+                    Product Description
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedProduct.product_description}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={(e) =>
+                      setSelectedProduct({
                         ...selectedProduct,
-                        product_description: e.target.value
-                      })}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Unit</label>
-                    <select
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      value={selectedUnit}
-                      onChange={(e) => setSelectedUnit(e.target.value)}
-                    >
-                      <option value="">Select Product Unit</option>
-                      {units.map((unit) => (
-                        <option key={unit._id} value={unit.unit_name}>
-                          {unit.unit_name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Stock Today</label>
-                    <input
-                      type="number"
-                      value={selectedProduct.product_countInStock}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      onChange={(e) => setSelectedProduct({
+                        product_description: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Unit Dropdown */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Unit</label>
+                  <select
+                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={selectedUnit}
+                    onChange={(e) => setSelectedUnit(e.target.value)}
+                  >
+                    <option value="">Select Product Unit</option>
+                    {units.map((unit) => (
+                      <option key={unit._id} value={unit.unit_name}>
+                        {unit.unit_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Stock Input */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Stock Today</label>
+                  <input
+                    type="number"
+                    value={selectedProduct.product_countInStock}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={(e) =>
+                      setSelectedProduct({
                         ...selectedProduct,
-                        product_countInStock: e.target.value
-                      })}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Price</label>
-                    <input
-                      type="text"
-                      value={selectedProduct.product_price}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      onChange={(e) => setSelectedProduct({
+                        product_countInStock: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Price Input */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Price</label>
+                  <input
+                    type="text"
+                    value={selectedProduct.product_price}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={(e) =>
+                      setSelectedProduct({
                         ...selectedProduct,
-                        product_price: e.target.value
-                      })}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700">Status</label>
-                    <select
-                      value={selectedProduct.status}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    >
-                      <option value="">Select Status</option>
-                      <option>Active</option>
-                      <option>Inactive</option>
-                    </select>
-                  </div>
+                        product_price: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                {/* Status Dropdown */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Status</label>
+                  <select
+                    value={selectedProduct.status}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={(e) =>
+                      setSelectedProduct({
+                        ...selectedProduct,
+                        status: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end">
                   <button
                     onClick={handleDeleteProduct}
                     className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"

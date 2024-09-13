@@ -1,27 +1,159 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
-
-//example data
-const mockCustomerData = {
-    id: "CID012",
-    name: "T K S Holdings Pvt Ltd",
-    address:"No. 24, Lorris Road, Galle Road, Colombo 03",
-    mobileno:"0112453456",
-    email:"tks@sales.lk",
-    cus_type:"Distributor",
-    cus_status:"Active",
-  };
+import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import Grid from "../components/Grid"; // Import the Grid component
+import { FaEdit } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function Customers({ onAddCustomerClick }) {
+  const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState({
+    field: "customer_name",
+    direction: "asc",
+  });
+
+  useEffect(() => {
+    // Fetch customers from the API when the component mounts
+    const fetchCustomers = async () => {
+      try {
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/customers"
+        );
+        // Map the customers to include an id field
+        const customersWithId = response.data.customers.map((customer) => ({
+          ...customer,
+          id: customer.customer_code, // Assign _id to id
+        }));
+        setCustomers(customersWithId); // Set customers with id field
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
 
   const handleCustomerClick = (customer) => {
-    setSelectedCustomer(customer);
+    // Ensure that the selected customer contains all necessary fields
+    setSelectedCustomer({
+      ...customer,
+      customer_name: customer.customer_name || "",
+      cus_address: customer.cus_address || "",
+      cus_mobileno: customer.cus_mobileno || "",
+      cus_email: customer.cus_email || "",
+      customer_type: customer.customer_type || "",
+      status: customer.status || "Active",
+    });
   };
 
   const handleClosePopup = () => {
     setSelectedCustomer(null);
+  };
+
+  const handleSortChange = (field) => {
+    setSort((prev) => ({
+      field,
+      direction: prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const filteredCustomers = customers
+    .filter(
+      (customer) =>
+        customer.customer_name &&
+        customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (a[sort.field] < b[sort.field])
+        return sort.direction === "asc" ? -1 : 1;
+      if (a[sort.field] > b[sort.field])
+        return sort.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+
+  const columns = [
+    { field: "customer_code", headerName: "ID", width: 90 }, // Use id here
+    { field: "customer_name", headerName: "Customer Name", width: 150 },
+    { field: "cus_address", headerName: "Customer Address", width: 200 },
+    { field: "cus_mobileno", headerName: "Mobile No", width: 150 },
+    { field: "cus_email", headerName: "Email", width: 100 },
+    { field: "customer_type", headerName: "Customer Type", width: 150 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 100,
+      renderCell: (params) => {
+        const status = params.row.status;
+        const statusClass =
+          status === "Active"
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white";
+
+        return (
+          <span className={`px-2 py-1 rounded-sm ${statusClass}`}>
+            {status}
+          </span>
+        );
+      },
+    },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <div className="flex justify-left items-left w-10 h-10">
+          <button
+            onClick={() => handleCustomerClick(params.row)}
+            className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
+          >
+            <FaEdit className="text-white mr-2" />
+            Edit
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const handleUpdateCustomer = async () => {
+    try {
+      await axios.put(
+        `http://192.168.56.1:5000/api/customers/update/${selectedCustomer.customer_code}`,
+        {
+          ...selectedCustomer,
+        }
+      );
+      toast.success("Customer Updated Succesfully");
+      setSelectedCustomer(null);
+      // Refresh the customer list
+      const response = await axios.get(
+        "http://192.168.56.1:5000/api/customers"
+      );
+      setCustomers(response.data.customers);
+    } catch (error) {
+      console.error("Error updating customers:", error);
+      toast.error("Error Updating Customer");
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    try {
+      await axios.delete(
+        `http://192.168.56.1:5000/api/customers/delete/${selectedCustomer.customer_code}`
+      );
+      toast.success("Customer Deleted Succesfully");
+      setSelectedCustomer(null);
+      // Refresh the Customer list
+      const response = await axios.get(
+        "http://192.168.56.1:5000/api/customers"
+      );
+      setCustomers(response.data.customers);
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      toast.error("Error Deleting Customer");
+    }
   };
 
   return (
@@ -38,72 +170,41 @@ function Customers({ onAddCustomerClick }) {
           </button>
         </div>
 
-        {/* Customer List */}
+        {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search customers here"
+                placeholder="Search product here"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
               </div>
             </div>
+            {/* Customer Sorting */}
+            <div className="flex space-x-4 items-center">
+              <label className="px-1 py-2 block text-gray-700 flex items-center">
+                <span className="mr-2">Sort</span>
+                <FontAwesomeIcon icon={faFilter} className="text-gray-700" />
+              </label>
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg w-full h-10"
+                onChange={(e) => handleSortChange(e.target.value)}
+              >
+                <option value="">Select </option>
+                <option value="customer_name">Customer Name</option>
+                <option value="owner_name">Owners name</option>
+                {/* Add more sorting options if needed */}
+              </select>
+            </div>
           </div>
 
-          <table className="w-full text-center border-collapse">
-            {/*----Table Start---- */}
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer Code
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer Name
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer Address
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer Mobile No
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer email
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Customer Type
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Status
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Example Organization */}
-              <tr
-                className="border-b hover:bg-gray-50 cursor-pointer"
-                onClick={() => handleCustomerClick(mockCustomerData)}
-              >
-                <td className="py-2 px-4 text-sm">CID001</td>
-                <td className="py-2 px-4 text-sm">T K S Holdings Pvt Ltd</td>
-                <td className="py-2 px-4 text-sm">No. 24, Lorris Road, Galle Road, Colombo 03</td>
-                <td className="py-2 px-4 text-sm">0112453456</td>
-                <td className="py-2 px-4 text-sm">tks@sales.lk</td>
-                <td className="py-2 px-4 text-sm">Distributor</td>
-                <td className="py-2 px-4 text-sm">
-                  <span className="bg-green-500 text-white px-2 py-1 rounded-sm">
-                    Active
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {/*----Table End---- */}
+          {/* customer Grid */}
+          <Grid rows={filteredCustomers} columns={columns} />
         </div>
 
         {/* Popup for Customer Details */}
@@ -119,58 +220,109 @@ function Customers({ onAddCustomerClick }) {
               <div className="flex mb-4">
                 <div className="w-1/2 pl-4">
                   <h2 className="text-xl font-semibold mb-4">
-                    {selectedCustomer.name}
+                    {selectedCustomer.customer_name}
                   </h2>
+                  {/* customer address */}
                   <div className="mb-4">
-                    <label className="block text-gray-700">Customer Address</label>
+                    <label className="block text-gray-700">
+                      Customer Address
+                    </label>
                     <input
                       type="text"
-                      value={selectedCustomer.address}
+                      value={selectedCustomer.cus_address}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedCustomer({
+                          ...selectedCustomer,
+                          cus_address: e.target.value,
+                        })
+                      }
                     />
                   </div>
+                  {/* customer mobile No */}
                   <div className="mb-4">
-                    <label className="block text-gray-700">Customer MobileNo</label>
+                    <label className="block text-gray-700">
+                      Customer MobileNo
+                    </label>
                     <input
                       type="number"
-                      value={selectedCustomer.mobileno}
+                      value={selectedCustomer.cus_mobileno}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedCustomer({
+                          ...selectedCustomer,
+                          cus_mobileno: e.target.value,
+                        })
+                      }
                     />
                   </div>
+                  {/* customer email */}
                   <div className="mb-4">
-                    <label className="block text-gray-700">Customer Email Address</label>
+                    <label className="block text-gray-700">
+                      Customer Email Address
+                    </label>
                     <input
                       type="text"
-                      value={selectedCustomer.email}
+                      value={selectedCustomer.cus_email}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedCustomer({
+                          ...selectedCustomer,
+                          cus_email: e.target.value,
+                        })
+                      }
                     />
                   </div>
                   <div className="mb-4">
                     <label className="block text-gray-700">Customer Type</label>
                     <select
-                      value={selectedCustomer.cus_type}
+                      value={selectedCustomer.customer_type}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedCustomer({
+                          ...selectedCustomer,
+                          customer_type: e.target.value,
+                        })
+                      }
                     >
-                      <option>Distributor</option>
-                      <option>Dealer</option>
+                      <option value="">Select Customer type</option>
+                      <option value="Distributor">Distributor</option>
+                      <option value="Dealer">Dealer</option>
                     </select>
                   </div>
+                  {/* Status Dropdown */}
                   <div className="mb-4">
                     <label className="block text-gray-700">Status</label>
                     <select
-                      value={selectedCustomer.cus_status}
+                      value={selectedCustomer.status}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onChange={(e) =>
+                        setSelectedCustomer({
+                          ...selectedCustomer,
+                          status: e.target.value,
+                        })
+                      }
                     >
-                      <option>Active</option>
-                      <option>Inactive</option>
+                      <option value="">Select Status</option>
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
                     </select>
                   </div>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">
-                    Delete
-                  </button>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
-                    Update
-                  </button>
+                  {/* Buttons */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleDeleteCustomer}
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={handleUpdateCustomer}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                    >
+                      Update
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

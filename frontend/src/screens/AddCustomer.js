@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify"; // Import toast
 
 function AddCustomer() {
   const [customerName, setCustomerName] = useState("");
@@ -6,10 +8,51 @@ function AddCustomer() {
   const [customerMobileNo, setCustomerMobileNo] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerType, setCustomerType] = useState("");
+  const [generatedCustomerCode, setGeneratedCustomerCode] = useState(null); // State to hold the generated customer code
+  
 
   // Handle form submission
-  const handleAddCustomer = () => {
-    console.log("Customer added successfully!");
+  const handleAddCustomer = async () => {
+    // Validate required fields
+    if (!customerName) {
+      toast.error("Customer Name is required.");
+      return;
+    }
+    if (!customerEmail) {
+      toast.error("Customer Email is required.");
+      return;
+    }
+    if (!customerType) {
+      toast.error("Customer Type is required.");
+      return;
+    }
+    const formData = {
+      customer_name: customerName,
+      cus_address: customerAddress,
+      cus_mobileno: customerMobileNo,
+      cus_email: customerEmail,
+      customer_type: customerType,
+    };
+
+    const apiUrl = "http://192.168.56.1:5000/api/customers/add";
+
+    try {
+      const response = await axios.post(apiUrl, formData, {
+        headers: {
+          "Content-Type": "application/json", // Use JSON instead of multipart/form-data
+        },
+      });
+
+      const { message, customer } = response.data;
+      toast.success(message || "Customer added successfully!"); // Display success toast
+      console.log("Customer added successfully!");
+
+      // Set the generated unit code from the response
+      setGeneratedCustomerCode(customer.customer_code);
+    } catch (error) {
+      console.error("Error adding customer:", error);
+      toast.error("Error adding customer. Please try again."); // Display error toast
+    }
   };
 
   return (
@@ -87,7 +130,17 @@ function AddCustomer() {
               </select>
             </div>
           </div>
+          {/* Display the generated organization code if available */}
+          {generatedCustomerCode && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+              <p className="text-green-700 font-bold">
+                Generated Customer Code: {generatedCustomerCode}
+              </p>
+            </div>
+          )}
         </div>
+        {toast.error && <p className="text-red-500">{toast.error}</p>}
+        {toast.message && <p className="text-green-500">{toast.message}</p>}
       </div>
       <div className="flex space-x-4 mt-6">
         <button
@@ -95,9 +148,6 @@ function AddCustomer() {
           onClick={handleAddCustomer}
         >
           Add Customer
-        </button>
-        <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-          Save Customer
         </button>
       </div>
     </div>

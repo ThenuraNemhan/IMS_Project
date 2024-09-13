@@ -4,12 +4,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import Grid from "../components/Grid"; // Import the Grid component
 import { FaEdit } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function Units({ onAddUnitClick }) {
   const [units, setUnits] = useState([]);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sort] = useState({ field: 'unit_name', direction: 'asc' });
+  const [sort] = useState({ field: "unit_name", direction: "asc" });
 
   useEffect(() => {
     // Fetch units from the API when the component mounts
@@ -17,9 +18,9 @@ function Units({ onAddUnitClick }) {
       try {
         const response = await axios.get("http://192.168.56.1:5000/api/units");
         // Map the units to include an id field
-        const unitsWithId = response.data.units.map(unit => ({
+        const unitsWithId = response.data.units.map((unit) => ({
           ...unit,
-          id: unit.unit_code // Assign _id to id
+          id: unit.unit_code, // Assign _id to id
         }));
         setUnits(unitsWithId); // // Set units with id field
       } catch (error) {
@@ -45,37 +46,76 @@ function Units({ onAddUnitClick }) {
   //   }));
   // };
 
-  const filteredUnits = units.filter(unit =>
-    unit.unit_name && unit.unit_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredUnits = units
+    .filter(
+      (unit) =>
+        unit.unit_name &&
+        unit.unit_name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     .sort((a, b) => {
-      if (a[sort.field] < b[sort.field]) return sort.direction === 'asc' ? -1 : 1;
-      if (a[sort.field] > b[sort.field]) return sort.direction === 'asc' ? 1 : -1;
+      if (a[sort.field] < b[sort.field])
+        return sort.direction === "asc" ? -1 : 1;
+      if (a[sort.field] > b[sort.field])
+        return sort.direction === "asc" ? 1 : -1;
       return 0;
-    }
-  );
+    });
 
   const columns = [
-    { field: 'unit_code', headerName: 'ID', width: 90 }, // Use id here
-      { field: 'unit_name', headerName: 'Unit Name', width: 150 },
-      {
-        field: 'action',
-        headerName: 'Action',
-        width: 150,
-        renderCell: (params) => (
-          <div className="flex justify-left items-left w-10 h-10">
-            <button
-              onClick={() => handleUnitClick(params.row)}
-              className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
-            >
-              <FaEdit className="text-white mr-2" />
-              Edit
-            </button>
-          </div>
-        )
-      }
-  ]
-  
+    { field: "unit_code", headerName: "ID", width: 90 }, // Use id here
+    { field: "unit_name", headerName: "Unit Name", width: 150 },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <div className="flex justify-left items-left w-10 h-10">
+          <button
+            onClick={() => handleUnitClick(params.row)}
+            className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
+          >
+            <FaEdit className="text-white mr-2" />
+            Edit
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const handleUpdateUnit = async () => {
+    try {
+      await axios.put(
+        `http://192.168.56.1:5000/api/units/update/${selectedUnit.unit_code}`,
+        {
+          ...selectedUnit,
+        }
+      );
+      toast.success("Unit Updated Succesfully");
+      setSelectedUnit(null);
+      // Refresh the unit list
+      const response = await axios.get("http://192.168.56.1:5000/api/units");
+      setUnits(response.data.customers);
+    } catch (error) {
+      console.error("Error updating units:", error);
+      toast.error("Error Updating units");
+    }
+  };
+
+  const handleDeleteUnit = async () => {
+    try {
+      await axios.delete(
+        `http://192.168.56.1:5000/api/units/delete/${selectedUnit.unit_code}`
+      );
+      toast.success("Unit Deleted Succesfully");
+      setSelectedUnit(null);
+      // Refresh the Unit list
+      const response = await axios.get("http://192.168.56.1:5000/api/units");
+      setUnits(response.data.units);
+    } catch (error) {
+      console.error("Error deleting unit:", error);
+      toast.error("Error Deleting unit");
+    }
+  };
+
   return (
     <div className="flex h-screen">
       {/* Main Content */}
@@ -108,35 +148,6 @@ function Units({ onAddUnitClick }) {
             </div>
           </div>
 
-          {/* <table className="w-full text-center border-collapse"> */}
-            {/*----Table Start---- */}
-            {/* <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Unit Code
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Unit Name
-                </th>
-                <th className="py-2 px-4 border-b text-sm md:text-base">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUnits.map((unit) => (
-                <tr
-                  key={unit._id} // Assuming your units have an `_id` field
-                  className="border-b hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleUnitClick(unit)}
-                >
-                  <td className="py-2 px-4 text-sm">{unit._id}</td>
-                  <td className="py-2 px-4 text-sm">{unit.unit_name}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table> */}
-          {/*----Table End---- */}
           {/* Product Grid */}
           <Grid rows={filteredUnits} columns={columns} />
         </div>
@@ -165,10 +176,16 @@ function Units({ onAddUnitClick }) {
                       readOnly
                     />
                   </div>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">
+                  <button
+                    onClick={handleDeleteUnit}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
+                  >
                     Delete
                   </button>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                  <button
+                    onClick={handleUpdateUnit}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
                     Update
                   </button>
                 </div>

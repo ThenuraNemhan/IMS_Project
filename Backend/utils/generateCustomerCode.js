@@ -1,9 +1,9 @@
-// utils/generateOrganizationCode.js
+// utils/generateCustomerCode.js
 import Counter from "../Models/Counter.js";
 
-const generateOrganizationCode = async (prefix) => {
+const generateCustomerCode = async (prefix) => {
   const counter = await Counter.findOneAndUpdate(
-    { name: "organization_Code" },
+    { name: "customer_code" },
     { $inc: { sequence_value: 1 } },
     { new: true, upsert: true }
   );
@@ -12,4 +12,4 @@ const generateOrganizationCode = async (prefix) => {
   return `${prefix}-${sequenceNumber}`;
 };
 
-export default generateOrganizationCode;
+export default generateCustomerCode;
