@@ -10,4 +10,3 @@ router.put('/update/:unit_code', updateUnit);
 router.delete('/delete/:unit_code', deletedUnit); 
 
 export default router;
-forti

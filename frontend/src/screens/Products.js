@@ -102,7 +102,18 @@ function Products({ onAddProductClick }) {
   const columns = [
     { field: "id", headerName: "ID", width: 100 }, // Use id here
     { field: "product_name", headerName: "Product Name", width: 150 },
-    { field: "product_images", headerName: "Product Image", width: 150 },
+    {
+      field: "images",
+      headerName: "Image",
+      width: 120,
+      renderCell: (params) => (
+        <img
+          src={params.row.images[0]}
+          alt={params.row.product_name}
+          className="w-16 h-16 object-cover rounded-md"
+        />
+      ),
+    },
     {
       field: "product_description",
       headerName: "Product Description",

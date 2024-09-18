@@ -47,12 +47,51 @@ function AddProduct() {
   }, []);
 
   const generateProductCode = () => {
-    return 'PROD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    return "PROD-" + Math.random().toString(36).substr(2, 9).toUpperCase();
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     setSelectedImages(files);
+
+    // Loop through each file and upload to Cloudinary
+    const imageUrls = [];
+    for (let file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "IMS_System"); // Replace with your Cloudinary upload preset
+
+      try {
+        const response = await axios.post(
+          "https://api.cloudinary.com/v1_1/dxpbkbzur/image/upload", // Replace with your Cloudinary details
+          formData
+        );
+        imageUrls.push(response.data.secure_url); // Store the secure URL from Cloudinary
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        toast.error("Error uploading image. Please try again.");
+        return;
+      }
+    }
+
+    // Save the image URLs to state instead of files
+    setSelectedImages(imageUrls);
+  };
+
+  const handleImagePreview = () => {
+    return selectedImages.map((image, index) => {
+      const isUrl = typeof image === "string"; // Check if it's a URL or File object
+      const src = isUrl ? image : URL.createObjectURL(image);
+
+      return (
+        <img
+          key={index}
+          src={src}
+          alt={`Preview ${index}`}
+          className="w-32 h-32 object-cover rounded-lg"
+        />
+      );
+    });
   };
 
   const handleAddProduct = async () => {
@@ -128,11 +167,13 @@ function AddProduct() {
         <div className="grid grid-cols-2 gap-8">
           <div>
             {/* Product Code Display */}
-          {showProductCode && (
-            <div className="col-span-2 mt-4">
-              <p className="text-xl font-semibold">Product Code: {productCode}</p>
-            </div>
-          )}
+            {showProductCode && (
+              <div className="col-span-2 mt-4">
+                <p className="text-xl font-semibold">
+                  Product Code: {productCode}
+                </p>
+              </div>
+            )}
             {/* Product Name Input */}
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Product Name</label>
@@ -254,14 +295,7 @@ function AddProduct() {
                 <div className="mt-4">
                   <p className="text-sm text-gray-700 mb-2">Selected Images:</p>
                   <div className="grid grid-cols-3 gap-4">
-                    {selectedImages.map((image, index) => (
-                      <img
-                        key={index}
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index}`}
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
-                    ))}
+                    {handleImagePreview()}
                   </div>
                 </div>
               )}

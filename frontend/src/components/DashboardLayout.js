@@ -134,21 +134,37 @@ const DashboardLayout = () => {
       case "add-product":
         return <AddProduct />;
       case "units":
-        return (<Units onAddUnitClick={() => handleContentChange("add-unit")} />);
+        return <Units onAddUnitClick={() => handleContentChange("add-unit")} />;
       case "add-unit":
         return <AddUnit />;
       case "organizations":
-        return (<Organizations onAddOrganizationClick={() => handleContentChange("add-organization")}/>);
+        return (
+          <Organizations
+            onAddOrganizationClick={() =>
+              handleContentChange("add-organization")
+            }
+          />
+        );
       case "add-organization":
-        return <AddOrganization/>;
+        return <AddOrganization />;
       case "customers":
-        return (<Customers onAddCustomerClick={() => handleContentChange("add-customer")}/>);
+        return (
+          <Customers
+            onAddCustomerClick={() => handleContentChange("add-customer")}
+          />
+        );
       case "add-customer":
-        return <AddCustomer/>;
+        return <AddCustomer />;
       case "product-categories":
-        return <ProductCateogry onAddProductCategoryClick={() => handleContentChange("add-product-categories")}/>;
+        return (
+          <ProductCateogry
+            onAddProductCategoryClick={() =>
+              handleContentChange("add-product-categories")
+            }
+          />
+        );
       case "add-product-categories":
-        return <AddProductCategory/>;
+        return <AddProductCategory />;
       default:
         return <div>Select a content from the sidebar</div>;
     }
@@ -160,16 +176,19 @@ const DashboardLayout = () => {
       <div
         className={`${
           isSidebarOpen ? "w-64" : "w-0"
-        } transition-width duration-300 bg-gray-800 overflow-hidden`}
+        } transition-all duration-300 bg-gray-800 overflow-hidden fixed top-0 left-0 bottom-0`}
       >
         <Sidebar onContentChange={handleContentChange} />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div
+        className={`flex-1 flex flex-col ${
+          isSidebarOpen ? "ml-64" : "ml-0"
+        } transition-margin duration-300 ml-0`} // Ensure ml-0 is applied to avoid extra space
+      >
         <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         <main className="flex-1 p-6 bg-gray-100">
-          {/* Breadcrumb */}
           <Breadcrumb paths={breadcrumbPaths} onClick={handleContentChange} />
           {renderContent()}
         </main>

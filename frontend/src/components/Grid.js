@@ -1,10 +1,10 @@
-import React from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+import React from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import { Box } from "@mui/material";
 
 const Grid = ({ rows, columns, ...props }) => {
   return (
-    <Box sx={{ height: 700, width: '100%' }}>
+    <Box sx={{ height: "100%", width: "100%", overflow: "auto" }}>
       <DataGrid
         rows={rows}
         columns={columns}
@@ -12,7 +12,7 @@ const Grid = ({ rows, columns, ...props }) => {
         rowsPerPageOptions={[10]}
         checkboxSelection
         disableSelectionOnClick
-        getRowId={(row) => row._id}  // Extract unique id from each row
+        getRowId={(row) => row._id}
         {...props}
       />
     </Box>

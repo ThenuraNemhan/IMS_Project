@@ -19,4 +19,42 @@
     transform: translateY(-50%);
     pointer-events: none; /* Ensure clicks on the icon do not interfere with select element */
   }
-  
+
+  /* Tailwind CSS classes or equivalent CSS */
+.main-content {
+  flex: 1;
+  padding: 1.5rem; /* Adjust as needed */
+  background-color: #f3f4f6; /* Default background color */
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem; /* Adjust padding for smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0.5rem; /* Further adjust padding for very small screens */
+  }
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom CSS for transitions */
+.transition-margin {
+  transition: margin 0.3s ease;
+}
+
+
+

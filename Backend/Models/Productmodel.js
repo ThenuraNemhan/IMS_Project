@@ -17,7 +17,7 @@ const ProductSchema = new mongoose.Schema(
       ref: "Unit",
       required: true,
     },
-    images: [{ type: String }], // Array to store image paths
+    images: [String],  // Array to hold image URLs
     productDate: { type: Date },
     status: {type:String, enum: ['Active', 'Inactive'], default: 'Active' }
   },
