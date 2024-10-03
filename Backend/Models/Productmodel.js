@@ -10,14 +10,12 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
     product_description: { type: String, required: true },
-    product_price: { type: Number, required: true },
-    product_countInStock: { type: Number, required: true },
     unit: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Unit",
       required: true,
     },
-    images: [String],  // Array to hold image URLs
+    //images: [String],  // Array to hold image URLs
     productDate: { type: Date },
     status: {type:String, enum: ['Active', 'Inactive'], default: 'Active' }
   },

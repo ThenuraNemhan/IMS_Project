@@ -6,13 +6,11 @@ function AddProduct() {
   const [productName, setProductName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
-  const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [productDate, setProductDate] = useState("");
-  const [quantity, setQuantity] = useState(0);
   const [selectedUnit, setSelectedUnit] = useState(""); // New state for selected unit
   const [units, setUnits] = useState([]); // State to hold units fetched from API
-  const [selectedImages, setSelectedImages] = useState([]);
+  //const [selectedImages, setSelectedImages] = useState([]);
   const [productCode, setProductCode] = useState(""); // State for product code
   const [showProductCode, setShowProductCode] = useState(false); // State to control visibility of product code
 
@@ -50,49 +48,49 @@ function AddProduct() {
     return "PROD-" + Math.random().toString(36).substr(2, 9).toUpperCase();
   };
 
-  const handleImageChange = async (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedImages(files);
+  // const handleImageChange = async (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setSelectedImages(files);
 
-    // Loop through each file and upload to Cloudinary
-    const imageUrls = [];
-    for (let file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "IMS_System"); // Replace with your Cloudinary upload preset
+  //   // Loop through each file and upload to Cloudinary
+  //   const imageUrls = [];
+  //   for (let file of files) {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
+  //     formData.append("upload_preset", "IMS_System"); // Replace with your Cloudinary upload preset
 
-      try {
-        const response = await axios.post(
-          "https://api.cloudinary.com/v1_1/dxpbkbzur/image/upload", // Replace with your Cloudinary details
-          formData
-        );
-        imageUrls.push(response.data.secure_url); // Store the secure URL from Cloudinary
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Error uploading image. Please try again.");
-        return;
-      }
-    }
+  //     try {
+  //       const response = await axios.post(
+  //         "https://api.cloudinary.com/v1_1/dxpbkbzur/image/upload", // Replace with your Cloudinary details
+  //         formData
+  //       );
+  //       imageUrls.push(response.data.secure_url); // Store the secure URL from Cloudinary
+  //     } catch (error) {
+  //       console.error("Error uploading image:", error);
+  //       toast.error("Error uploading image. Please try again.");
+  //       return;
+  //     }
+  //   }
 
-    // Save the image URLs to state instead of files
-    setSelectedImages(imageUrls);
-  };
+  //   // Save the image URLs to state instead of files
+  //   setSelectedImages(imageUrls);
+  // };
 
-  const handleImagePreview = () => {
-    return selectedImages.map((image, index) => {
-      const isUrl = typeof image === "string"; // Check if it's a URL or File object
-      const src = isUrl ? image : URL.createObjectURL(image);
+  // const handleImagePreview = () => {
+  //   return selectedImages.map((image, index) => {
+  //     const isUrl = typeof image === "string"; // Check if it's a URL or File object
+  //     const src = isUrl ? image : URL.createObjectURL(image);
 
-      return (
-        <img
-          key={index}
-          src={src}
-          alt={`Preview ${index}`}
-          className="w-32 h-32 object-cover rounded-lg"
-        />
-      );
-    });
-  };
+  //     return (
+  //       <img
+  //         key={index}
+  //         src={src}
+  //         alt={`Preview ${index}`}
+  //         className="w-32 h-32 object-cover rounded-lg"
+  //       />
+  //     );
+  //   });
+  // };
 
   const handleAddProduct = async () => {
     // Validate required fields
@@ -104,16 +102,8 @@ function AddProduct() {
       toast.error("Category is required.");
       return;
     }
-    if (!price) {
-      toast.error("Price is required.");
-      return;
-    }
     if (!description) {
       toast.error("Description is required.");
-      return;
-    }
-    if (quantity <= 0) {
-      toast.error("Quantity must be greater than zero.");
       return;
     }
     if (!selectedUnit) {
@@ -132,21 +122,19 @@ function AddProduct() {
     formData.append("product_name", productName);
     formData.append("product_category", selectedCategory);
     formData.append("product_description", description);
-    formData.append("product_price", price);
-    formData.append("product_countInStock", quantity);
     formData.append("unit", selectedUnit);
     formData.append("productDate", productDate);
     formData.append("productCode", productCode); // Add product code to form data
-    selectedImages.forEach((image) => {
-      formData.append("images", image);
-    });
+    // selectedImages.forEach((image) => {
+    //   formData.append("images", image);
+    // });
 
     const apiUrl = "http://192.168.56.1:5000/api/products/add";
 
     try {
       const response = await axios.post(apiUrl, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
         },
       });
 
@@ -208,27 +196,6 @@ function AddProduct() {
               </select>
             </div>
 
-            {/* Price and Currency */}
-            <div className="mb-4 flex items-center">
-              <div className="flex-grow">
-                <label className="block text-gray-700 mb-2">Price</label>
-                <input
-                  type="text"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter price"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-              <div className="ml-4">
-                <label className="block text-gray-700 mb-2">&nbsp;</label>
-                <select className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option>LKR</option>
-                  <option>USD</option>
-                </select>
-              </div>
-            </div>
-
             {/* Description */}
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Description</label>
@@ -239,33 +206,24 @@ function AddProduct() {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-
-            {/* Quantity */}
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">
-                Product Quantity
+            
+             {/* Unit Select */}
+             <div className="mb-4">
+              <label className="w-full block text-gray-700 mb-2">
+                Unit
               </label>
-              <div className="flex items-center">
-                <input
-                  type="number"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter product quantity"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-                <select
-                  className="ml-4 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  value={selectedUnit}
-                  onChange={(e) => setSelectedUnit(e.target.value)}
-                >
-                  <option value="">Select Product Unit</option>
-                  {units.map((unit) => (
-                    <option key={unit._id} value={unit.unit_name}>
-                      {unit.unit_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+              >
+                <option value="">Select Product Unit</option>
+                {units.map((unit) => (
+                  <option key={unit._id} value={unit.unit_name}>
+                    {unit.unit_name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Product Date */}
@@ -280,8 +238,7 @@ function AddProduct() {
             </div>
           </div>
 
-          <div>
-            {/* Image Upload */}
+          {/* <div>
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Upload Images</label>
               <input
@@ -300,7 +257,7 @@ function AddProduct() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
 
         {toast.error && <p className="text-red-500">{toast.error}</p>}

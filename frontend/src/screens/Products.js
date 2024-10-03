@@ -69,7 +69,6 @@ function Products({ onAddProductClick }) {
       unit: product.unit?._id || "", // Handle nested unit
       product_description: product.product_description || "",
       product_countInStock: product.product_countInStock || 0,
-      product_price: product.product_price || 0,
       status: product.status || "Active",
     });
   };
@@ -102,18 +101,18 @@ function Products({ onAddProductClick }) {
   const columns = [
     { field: "id", headerName: "ID", width: 100 }, // Use id here
     { field: "product_name", headerName: "Product Name", width: 150 },
-    {
-      field: "images",
-      headerName: "Image",
-      width: 120,
-      renderCell: (params) => (
-        <img
-          src={params.row.images[0]}
-          alt={params.row.product_name}
-          className="w-16 h-16 object-cover rounded-md"
-        />
-      ),
-    },
+    // {
+    //   field: "images",
+    //   headerName: "Image",
+    //   width: 120,
+    //   renderCell: (params) => (
+    //     <img
+    //       src={params.row.images[0]}
+    //       alt={params.row.product_name}
+    //       className="w-16 h-16 object-cover rounded-md"
+    //     />
+    //   ),
+    // },
     {
       field: "product_description",
       headerName: "Product Description",
@@ -139,8 +138,6 @@ function Products({ onAddProductClick }) {
         <span>{params.row.unit ? params.row.unit.unit_name : "N/A"}</span>
       ),
     },
-    { field: "product_countInStock", headerName: "Stock Today", width: 150 },
-    { field: "product_price", headerName: "Price", width: 150 },
     {
       field: "status",
       headerName: "Status",
@@ -331,38 +328,6 @@ function Products({ onAddProductClick }) {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Stock Input */}
-                <div className="mb-4">
-                  <label className="block text-gray-700">Stock Today</label>
-                  <input
-                    type="number"
-                    value={selectedProduct.product_countInStock}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    onChange={(e) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        product_countInStock: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                {/* Price Input */}
-                <div className="mb-4">
-                  <label className="block text-gray-700">Price</label>
-                  <input
-                    type="text"
-                    value={selectedProduct.product_price}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    onChange={(e) =>
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        product_price: e.target.value,
-                      })
-                    }
-                  />
                 </div>
 
                 {/* Status Dropdown */}

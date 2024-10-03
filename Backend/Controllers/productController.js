@@ -1,4 +1,4 @@
-import cloudinary from '../config/cloudinaryConfig.js';
+//import cloudinary from '../config/cloudinaryConfig.js';
 import Category from '../Models/ProductCategorymodel.js';
 import Product from '../Models/Productmodel.js';
 import Unit from '../Models/Unitsmodel.js'; // Ensure you import the Unit model
@@ -10,8 +10,6 @@ export const addProduct = async (req, res) => {
       product_name,
       product_category,
       product_description,
-      product_price,
-      product_countInStock,
       unit, // This should be a unit name like 'Kg'
       productDate,
     } = req.body;
@@ -34,21 +32,19 @@ export const addProduct = async (req, res) => {
     const categoryId = categoryDoc._id;
 
     // Upload images to Cloudinary
-    const imageUrls = [];
-    for (const file of req.files) {
-      const result = await cloudinary.uploader.upload(file.path);
-      imageUrls.push(result.secure_url); // Get URL of the uploaded image
-    }
+    // const imageUrls = [];
+    // for (const file of req.files) {
+    //   const result = await cloudinary.uploader.upload(file.path);
+    //   imageUrls.push(result.secure_url); // Get URL of the uploaded image
+    // }
 
     const newProduct = new Product({
       product_name,
       product_category: categoryId,
       product_description,
-      product_price,
-      product_countInStock,
       unit: unitCode,  // Store the ObjectId
       productDate,
-      images: imageUrls,
+      //images: imageUrls,
       status: 'Active', // Default status to "Active"
       product_code: productCode, // Save product code
     });
@@ -92,8 +88,6 @@ export const updateProduct = async (req, res) => {
       product_name,
       product_category,
       product_description,
-      product_price,
-      product_countInStock,
       unit, // Unit name
       productDate,
       status,
@@ -114,13 +108,13 @@ export const updateProduct = async (req, res) => {
     }
 
     // Check if images are uploaded, if yes, update them
-    let imageUrls = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
-        const result = await cloudinary.uploader.upload(file.path);
-        imageUrls.push(result.secure_url); // Get URL of the uploaded image
-      }
-    }
+    // let imageUrls = [];
+    // if (req.files && req.files.length > 0) {
+    //   for (const file of req.files) {
+    //     const result = await cloudinary.uploader.upload(file.path);
+    //     imageUrls.push(result.secure_url); // Get URL of the uploaded image
+    //   }
+    // }
 
     const updatedProduct = await Product.findOneAndUpdate(
       { product_code }, // Find by product_code instead of _id
@@ -128,12 +122,10 @@ export const updateProduct = async (req, res) => {
         product_name,
         product_category: categoryDoc._id,
         product_description,
-        product_price,
-        product_countInStock,
         unit: unitDoc._id,
         productDate,
         status,
-        ...(imageUrls.length > 0 && { images: imageUrls }), // Update images only if new ones are uploaded
+        //...(imageUrls.length > 0 && { images: imageUrls }), // Update images only if new ones are uploaded
       },
       { new: true }
     ).populate("unit").populate("product_category");

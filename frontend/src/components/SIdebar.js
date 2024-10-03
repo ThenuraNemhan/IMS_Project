@@ -1,27 +1,41 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
   faBox,
-  faChartLine,
   faFileAlt,
   faCog,
   faChevronDown,
   faCubes,
   faBuilding,
   faBalanceScale,
-  faUserTie,
   faTag,
+  faUsers,
+  faLocationArrow,
+  faUserGroup,
+  faRecycle,
+  faIndustry,
+  faCartFlatbed,
+  faCartFlatbedSuitcase,
+  faCartArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
-
 
 const Sidebar = ({ onContentChange }) => {
   const [isInventoryOpen, setInventoryOpen] = useState(false);
+  const [isProductionOpen, setProductionOpen] = useState(false);
+  const [isOrdersOpen, setOrdersOpen] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState("user-dashboard");
 
   const toggleInventoryDropdown = () => {
     setInventoryOpen(!isInventoryOpen);
+  };
+
+  const toggleProductionDropdown = () => {
+    setProductionOpen(!isProductionOpen);
+  };
+
+  const toggleOrdersDropdown = () => {
+    setOrdersOpen(!isOrdersOpen);
   };
 
   const handleMenuItemClick = (menuItem) => {
@@ -113,7 +127,7 @@ const Sidebar = ({ onContentChange }) => {
                     : "hover:bg-gray-700"
                 }`}
               >
-                <FontAwesomeIcon icon={faUserTie} className="mr-3" />
+                <FontAwesomeIcon icon={faUserGroup} className="mr-3" />
                 Customers
               </button>
               <button
@@ -127,34 +141,133 @@ const Sidebar = ({ onContentChange }) => {
                 <FontAwesomeIcon icon={faTag} className="mr-3" />
                 Category
               </button>
+              <button
+                onClick={() => handleMenuItemClick("locations")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "locations"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faLocationArrow} className="mr-3" />
+                Location
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("users")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "users"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faUsers} className="mr-3" />
+                Users
+              </button>
             </div>
           )}
         </div>
+        <div>
+          <button
+            onClick={toggleProductionDropdown}
+            className={`flex items-center w-full py-2.5 px-4 rounded focus:outline-none ${
+              activeMenuItem === "production"
+                ? "bg-gray-700 text-gray-300"
+                : "hover:bg-gray-700"
+            }`}
+          >
+            <FontAwesomeIcon icon={faIndustry} className="mr-3" />
+            Production
+            <FontAwesomeIcon
+              icon={faChevronDown}
+              className={`ml-auto transition-transform ${
+                isProductionOpen ? "transform rotate-180" : ""
+              }`}
+            />
+          </button>
 
-        <NavLink
-          to="/sales"
-          className="flex items-center py-2.5 px-4 rounded hover:bg-gray-700"
-          activeClassName="bg-gray-700 text-gray-300"
-        >
-          <FontAwesomeIcon icon={faChartLine} className="mr-3" />
-          Sales
-        </NavLink>
-        <NavLink
-          to="/reports"
-          className="flex items-center py-2.5 px-4 rounded hover:bg-gray-700"
-          activeClassName="bg-gray-700 text-gray-300"
+          {isProductionOpen && (
+            <div className="pl-8">
+              <button
+                onClick={() => handleMenuItemClick("production-batch")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "production-batch"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faRecycle} className="mr-3" />
+                Production Batch
+              </button>
+            </div>
+          )}
+        </div>
+        <div>
+          <button
+            onClick={toggleOrdersDropdown}
+            className={`flex items-center w-full py-2.5 px-4 rounded focus:outline-none ${
+              activeMenuItem === "orders"
+                ? "bg-gray-700 text-gray-300"
+                : "hover:bg-gray-700"
+            }`}
+          >
+            <FontAwesomeIcon icon={faCartFlatbedSuitcase} className="mr-3" />
+            Orders
+            <FontAwesomeIcon
+              icon={faChevronDown}
+              className={`ml-auto transition-transform ${
+                isOrdersOpen ? "transform rotate-180" : ""
+              }`}
+            />
+          </button>
+          {isOrdersOpen && (
+            <div className="pl-8">
+              <button
+                onClick={() => handleMenuItemClick("sales-orders")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "sales-orders"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faCartFlatbed} className="mr-3" />
+                Sales Orders
+              </button>
+              <button
+                onClick={() => handleMenuItemClick("transfer-orders")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "transfer-orders"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faCartArrowDown} className="mr-3" />
+                Transfer Orders
+              </button>
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => handleMenuItemClick("reports")}
+          className={`flex items-center py-2 px-4 rounded w-full text-left ${
+            activeMenuItem === "reports"
+              ? "bg-gray-700 text-gray-300"
+              : "hover:bg-gray-700"
+          }`}
         >
           <FontAwesomeIcon icon={faFileAlt} className="mr-3" />
           Reports
-        </NavLink>
-        <NavLink
-          to="/settings"
-          className="flex items-center py-2.5 px-4 rounded hover:bg-gray-700"
-          activeClassName="bg-gray-700 text-gray-300"
+        </button>
+        <button
+          onClick={() => handleMenuItemClick("settings")}
+          className={`flex items-center py-2 px-4 rounded w-full text-left ${
+            activeMenuItem === "settings"
+              ? "bg-gray-700 text-gray-300"
+              : "hover:bg-gray-700"
+          }`}
         >
           <FontAwesomeIcon icon={faCog} className="mr-3" />
           Settings
-        </NavLink>
+        </button>
       </nav>
     </div>
   );

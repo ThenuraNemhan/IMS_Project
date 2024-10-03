@@ -27,30 +27,39 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
-    
+
     try {
       const response = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password, role: userType }) // Pass userType (role)
       });
-  
+
       const data = await response.json();
       if (!response.ok) {
         setError(data.message);
         return;
       }
-  
-      localStorage.setItem('token', data.token); // Save token to local storage
-      navigate(`/${data.role.toLowerCase()}-dashboard`);
+
+      // Store token and user role in local storage for persistence
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.data.role);
+      localStorage.setItem('user_code', data.data.user_code); // Save user_code
+
+      // Navigate to the respective dashboard based on role
+      if (data.data.role === 'Main Admin') {
+        navigate(`/mainadmin-dashboard`);
+      } else if (data.data.role === 'Company Admin') {
+        navigate(`/companyadmin-dashboard`);
+      } else {
+        navigate(`/user-dashboard`);
+      }
+
     } catch (error) {
       console.error('Error logging in:', error);
       setError('Something went wrong. Please try again.');
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -65,7 +74,7 @@ function Login() {
           <Form.Group className="relative">
             <i className="fas fa-user absolute top-3 left-3 text-gray-400"></i>
             <Form.Control
-              type="username"
+              type="text"
               placeholder="Username"
               name="username"
               value={username}
@@ -94,8 +103,8 @@ function Login() {
                 className="pl-3 w-full pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               >
                 <option value="User">User</option>
-                <option value="CompanyAdmin">Company Admin</option>
-                <option value="MainAdmin">Main Admin</option>
+                <option value="Company Admin">Company Admin</option>
+                <option value="Main Admin">Main Admin</option>
               </Form.Control>
               <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
             </Form.Group>

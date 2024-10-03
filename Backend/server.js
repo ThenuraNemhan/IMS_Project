@@ -8,6 +8,8 @@ import UnitRouter from './Routes/unitRouter.js';
 import ProductCategoryRouter from './Routes/productCategoryRouter.js';
 import OrganizationRouter from './Routes/organizationRouter.js';
 import CustomerRouter from './Routes/customerRouter.js';
+import LocationRouter from './Routes/locationRouter.js';
+import UserRouter from './Routes/userRouter.js';
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -41,6 +43,8 @@ app.use('/api/units', UnitRouter);
 app.use('/api/categories', ProductCategoryRouter);
 app.use('/api/organizations', OrganizationRouter);
 app.use('/api/customers', CustomerRouter);
+app.use('/api/locations', LocationRouter);
+app.use('/api/users', UserRouter);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port: ${port}`);

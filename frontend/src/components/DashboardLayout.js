@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Navbar from "./Navbar";
-import Sidebar from "./SIdebar";
-import Products from "../screens/Products";
+import Navbar from "./Navbar.js";
+import Sidebar from "./SIdebar.js";
+import Products from "../screens/Products.js";
 import UserDashboard from "../screens/UserDashboard.js";
 import AddProduct from "../screens/AddProduct.js";
 import Breadcrumb from "./Breadcrumb"; // Import Breadcrumb
@@ -13,6 +13,10 @@ import {
   FaBuilding,
   FaUserTie,
   FaTags,
+  FaLocationArrow,
+  FaUsers,
+  FaRecycle,
+  FaIndustry,
 } from "react-icons/fa"; // Import icons
 import Units from "../screens/Units";
 import AddUnit from "../screens/AddUnit";
@@ -22,6 +26,12 @@ import Customers from "../screens/Customers";
 import AddCustomer from "../screens/AddCustomer";
 import ProductCateogry from "../screens/ProductCategory.js";
 import AddProductCategory from "../screens/AddProductCategory.js";
+import Location from "../screens/Location.js";
+import AddLocation from "../screens/AddLocations.js";
+import Users from "../screens/Users.js";
+import AddUser from "../screens/AddUser.js";
+import ProductBatch from "../screens/ProductBatch.js";
+import AddProductionBatch from "../screens/AddProductionBatch.js";
 
 const DashboardLayout = () => {
   const [activeContent, setActiveContent] = useState("user-dashboard"); // Default to 'user-dashboard'
@@ -36,6 +46,101 @@ const DashboardLayout = () => {
     },
   ]);
 
+  // Define the hierarchy of the menu items
+  const menuHierarchy = {
+    "products": {
+      parent: "master-data",
+      name: "Product",
+      icon: <FaBox />,
+    },
+    "units": {
+      parent: "master-data",
+      name: "Unit",
+      icon: <FaBalanceScale />,
+    },
+    "organizations": {
+      parent: "master-data",
+      name: "Organization",
+      icon: <FaBuilding />,
+    },
+    "customers": {
+      parent: "master-data",
+      name: "Customer",
+      icon: <FaUserTie />,
+    },
+    "product-categories": {
+      parent: "master-data",
+      name: "Product Category",
+      icon: <FaTags />,
+    },
+    "locations": {
+      parent: "master-data",
+      name: "Location",
+      icon: <FaLocationArrow />,
+    },
+    "users": {
+      parent: "master-data",
+      name: "User",
+      icon: <FaUsers />,
+    },
+    "master-data": {
+      parent: null,
+      name: "Master Data",
+      icon: <FaTags />,
+    },
+    "add-product": {
+      parent: "products",
+      name: "Add Product",
+      icon: <FaPlus />,
+    },
+    "add-unit": {
+      parent: "units",
+      name: "Add Unit",
+      icon: <FaPlus />,
+    },
+    "add-organization": {
+      parent: "organizations",
+      name: "Add Organization",
+      icon: <FaPlus />,
+    },
+    "add-customer": {
+      parent: "customers",
+      name: "Add Customer",
+      icon: <FaPlus />,
+    },
+    "add-product-categories": {
+      parent: "product-categories",
+      name: "Add Product Category",
+      icon: <FaPlus />,
+    },
+    "add-location": {
+      parent: "locations",
+      name: "Add Location",
+      icon: <FaPlus />,
+    },
+    "add-user": {
+      parent: "users",
+      name: "Add User",
+      icon: <FaPlus />,
+    },
+    "production": {
+      parent: null,
+      name: "Production",
+      icon: <FaIndustry />,
+    },
+    "production-batch": {
+      parent: "production",
+      name: "Production Batch",
+      icon: <FaRecycle />,
+    },
+    "add-production-batch": {
+      parent: "production-batch",
+      name: "Add Production Batch",
+      icon: <FaPlus />,
+    },
+
+  };
+
   const handleContentChange = (content) => {
     setActiveContent(content);
 
@@ -48,73 +153,32 @@ const DashboardLayout = () => {
         isActive: true,
       };
 
-      // Check if the content already exists in the breadcrumb
-      const existingIndex = prevPaths.findIndex(
-        (path) => path.content === content
-      );
+      const hierarchy = menuHierarchy[content];
 
-      if (existingIndex !== -1) {
-        // If the user is navigating backward, slice the breadcrumb array to the current path
-        return prevPaths.slice(0, existingIndex + 1);
+      // If the content has a parent (e.g., "Master Data"), include it in the breadcrumb
+      if (hierarchy && hierarchy.parent) {
+        const parentPath = {
+          name: getContentName(hierarchy.parent),
+          content: hierarchy.parent,
+          icon: getContentIcon(hierarchy.parent),
+          isActive: false,
+        };
+
+        // Add parent and child to the breadcrumb
+        return [...prevPaths.slice(0, 1), parentPath, newPath];
       } else {
-        // Add the new path and mark it as active
-        return [...prevPaths, newPath];
+        // Add only the new path
+        return [...prevPaths.slice(0, 1), newPath];
       }
     });
   };
 
   const getContentName = (content) => {
-    switch (content) {
-      case "products":
-        return "Product";
-      case "add-product":
-        return "Add Product";
-      case "units":
-        return "Unit";
-      case "add-unit":
-        return "Add Unit";
-      case "organizations":
-        return "Organization";
-      case "add-organization":
-        return "Add Organization";
-      case "customers":
-        return "Customer";
-      case "add-customer":
-        return "Add Customer";
-      case "product-categories":
-        return "Product Category";
-      case "add-product-categories":
-        return "Add Product Category";
-      default:
-        return "Home";
-    }
+    return menuHierarchy[content]?.name || "Home";
   };
 
   const getContentIcon = (content) => {
-    switch (content) {
-      case "products":
-        return <FaBox />;
-      case "add-product":
-        return <FaPlus />;
-      case "units":
-        return <FaBalanceScale />;
-      case "add-unit":
-        return <FaPlus />;
-      case "organizations":
-        return <FaBuilding />;
-      case "add-organization":
-        return <FaPlus />;
-      case "customers":
-        return <FaUserTie />;
-      case "add-customer":
-        return <FaPlus />;
-      case "product-categories":
-        return <FaTags />;
-      case "add-product-categories":
-        return <FaPlus />;
-      default:
-        return <FaHome />;
-    }
+    return menuHierarchy[content]?.icon || <FaHome />;
   };
 
   const toggleSidebar = () => {
@@ -165,6 +229,22 @@ const DashboardLayout = () => {
         );
       case "add-product-categories":
         return <AddProductCategory />;
+      case "locations":
+        return (
+          <Location
+            onAddLocationClick={() => handleContentChange("add-location")}
+          />
+        );
+      case "add-location":
+        return <AddLocation />;
+      case "users":
+        return <Users onAddUserClick={() => handleContentChange("add-user")} />;
+      case "add-user":
+        return <AddUser />;
+      case "production-batch":
+        return <ProductBatch onAddProductBatchClick={() => handleContentChange("add-production-batch")}/>
+        case "add-production-batch":
+        return <AddProductionBatch />;
       default:
         return <div>Select a content from the sidebar</div>;
     }
@@ -183,12 +263,14 @@ const DashboardLayout = () => {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col ${
-          isSidebarOpen ? "ml-64" : "ml-0"
-        } transition-margin duration-300 ml-0`} // Ensure ml-0 is applied to avoid extra space
+        className={`flex-1 flex flex-col transition-margin duration-300`}
+        style={{
+          marginLeft: isSidebarOpen ? "16rem" : "0", // 16rem = 64px (Sidebar width)
+          width: isSidebarOpen ? "calc(100% - 16rem)" : "100%",
+        }}
       >
         <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <main className="flex-1 p-6 bg-gray-100">
+        <main className="flex-1 p-6 bg-gray-100 overflow-hidden">
           <Breadcrumb paths={breadcrumbPaths} onClick={handleContentChange} />
           {renderContent()}
         </main>
