@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import Grid from "../components/Grid"; // Import the Grid component
 import { FaEdit } from "react-icons/fa";
@@ -10,10 +10,12 @@ function Customers({ onAddCustomerClick }) {
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sort, setSort] = useState({
+  const [sort] = useState({
     field: "customer_name",
     direction: "asc",
   });
+  const [selectedSearchField, setSelectedSearchField] =
+    useState("customer_name"); // New state for search field
 
   useEffect(() => {
     // Fetch customers from the API when the component mounts
@@ -53,19 +55,41 @@ function Customers({ onAddCustomerClick }) {
     setSelectedCustomer(null);
   };
 
-  const handleSortChange = (field) => {
-    setSort((prev) => ({
-      field,
-      direction: prev.direction === "asc" ? "desc" : "asc",
-    }));
-  };
-
+  // Filter and sort the Customers
   const filteredCustomers = customers
-    .filter(
-      (customer) =>
-        customer.customer_name &&
-        customer.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((customer) => {
+      switch (selectedSearchField) {
+        case "customer_code":
+          return (
+            customer.customer_code &&
+            customer.customer_code
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        case "customer_name":
+          return (
+            customer.customer_name &&
+            customer.customer_name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        case "cus_email":
+          return (
+            customer.cus_email &&
+            customer.cus_email.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        case "customer_type":
+          return (
+            customer.customer_type &&
+            customer.customer_type
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+
+        default:
+          return false;
+      }
+    })
     .sort((a, b) => {
       if (a[sort.field] < b[sort.field])
         return sort.direction === "asc" ? -1 : 1;
@@ -173,10 +197,25 @@ function Customers({ onAddCustomerClick }) {
         {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
+            {/* Dropdown for selecting the search field */}
+            <div className="mr-4">
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg"
+                value={selectedSearchField}
+                onChange={(e) => setSelectedSearchField(e.target.value)}
+              >
+                <option value="customer_name">Customer Name</option>
+                <option value="customer_code">Code</option>
+                <option value="cus_email">Email</option>
+                <option value="customer_type">Customer Type</option>
+              </select>
+            </div>
+
+            {/* Search input */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search customers here"
+                placeholder="Search Batch here"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
@@ -184,22 +223,6 @@ function Customers({ onAddCustomerClick }) {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
               </div>
-            </div>
-            {/* Customer Sorting */}
-            <div className="flex space-x-4 items-center">
-              <label className="px-1 py-2 block text-gray-700 flex items-center">
-                <span className="mr-2">Sort</span>
-                <FontAwesomeIcon icon={faFilter} className="text-gray-700" />
-              </label>
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-lg w-full h-10"
-                onChange={(e) => handleSortChange(e.target.value)}
-              >
-                <option value="">Select </option>
-                <option value="customer_name">Customer Name</option>
-                <option value="owner_name">Owners name</option>
-                {/* Add more sorting options if needed */}
-              </select>
             </div>
           </div>
 

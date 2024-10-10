@@ -17,12 +17,13 @@ function AddProductionBatch() {
   //const [batchProducts, setBatchProducts] = useState([]); // Products to display in the main form grid with qty and price
   const [saveEnabled, setSaveEnabled] = useState(false); // Toggle save button visibility
 
-
   // Fetch products and locations
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/products");
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/products"
+        );
         const productsWithId = response.data.products.map((product) => ({
           ...product,
           id: product.product_code, // Ensure `id` is set properly for DataGrid
@@ -35,7 +36,9 @@ function AddProductionBatch() {
 
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/locations");
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/locations"
+        );
         const locationsWithId = response.data.locations.map((location) => ({
           ...location,
           id: location.location_code,
@@ -59,14 +62,15 @@ function AddProductionBatch() {
 
       try {
         // Fetch next batch number from the backend
-        const response = await axios.get("http://192.168.56.1:5000/api/products/latest-batch-number");
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/products/production-batch/latest-batch-number"
+        );
         const batchNumber = response.data.nextBatchNumber;
 
         const code = `PB-${year}-${month}-${batchNumber}`;
         setProductionBatchCode(code);
         setCreatedDate(new Date().toLocaleString());
         setCreatedBy("Current User"); // Replace with the logged-in user
-
       } catch (error) {
         console.error("Error fetching batch number:", error);
         toast.error("Failed to generate batch number.");
@@ -75,38 +79,39 @@ function AddProductionBatch() {
 
     generateBatchCode();
   }, []);
-  
+
   const handleAddProducts = async () => {
     if (!description || !selectedLocation) {
       toast.error("All fields are required");
       return;
     }
-  
+
     // Prepare payload for creating a production batch
     const payload = {
       productionBatchCode,
       description,
       location: selectedLocation,
-      selectedProducts: []  // add the products to Production Batch
+      selectedProducts: [], // add the products to Production Batch
     };
-  
+
     try {
       // Send data to backend
-      const response = await axios.post("http://192.168.56.1:5000/api/products/add-production-batch", payload);
+      const response = await axios.post(
+        "http://192.168.56.1:5000/api/products/production-batch/add",
+        payload
+      );
       toast.success("Production Batch created successfully!");
-  
-      // Store the batch ID to use when adding products
-      const productionBatchCode = response.data.product._id;
+
+      // Store the batch code to use when adding products
+      const createdBatchCode = response.data.productionBatchCode; // Change here
+      setProductionBatchCode(createdBatchCode); // Set the correct batch code
       setIsModalOpen(true); // Open modal to add products
-  
-      // Save batch ID in the state if needed
-      setProductionBatchCode(productionBatchCode); 
     } catch (error) {
       console.error("Error creating batch:", error);
       toast.error("Failed to create Production Batch");
     }
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
@@ -131,29 +136,37 @@ function AddProductionBatch() {
     );
     if (productToMoveBack) {
       setProducts((prev) => [...prev, productToMoveBack]);
-      setSelectedProducts(selectedProducts.filter((p) => p.id !== selectedProductId));
+      setSelectedProducts(
+        selectedProducts.filter((p) => p.id !== selectedProductId)
+      );
     }
   };
 
   // Save the selected products with quantity and price to the main grid
   const handleSaveProducts = async () => {
     const selectedProductsData = selectedProducts.map((product) => ({
-      product: product.product_code,
+      id: product.id, // Unique ID for DataGrid
+      product_name: product.product_name, // Ensure the required fields exist
+      in_stock_quantity: product.in_stock_quantity, // Initially set quantity to 0
+      price: product.price, // Initially set price to 0
     }));
-  
+
     // Prepare payload to add products
     const payload = {
       productionBatchCode,
       selectedProducts: selectedProductsData,
     };
-  
+
     try {
       // Send products to backend
-      await axios.post("http://192.168.56.1:5000/api/products/add-production-batch-products", payload);
+      await axios.post(
+        "http://192.168.56.1:5000/api/products/production-batch/add-products",
+        payload
+      );
       toast.success("Products added successfully!");
-  
+
       // Reset products and close the modal
-      setSelectedProducts([]);
+      setSelectedProducts(selectedProductsData);
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error adding products:", error);
@@ -163,58 +176,97 @@ function AddProductionBatch() {
 
   const handleSaveBatchProducts = async () => {
     try {
-      // Prepare data to save updated products to DB
       const payload = {
-        productionBatchCode,
-        products: selectedProducts.map((product) => ({
-          product: product.product.id,
-          quantity: product.in_stock_quantity,
-          price: product.price,
+        productionBatchCode: productionBatchCode, // Ensure you're using the correct productionBatchCode
+        updatedProducts: selectedProducts.map((product) => ({
+          product_code: product.id, // Ensure this is the correct product identifier
+          in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
+          price: Number(product.price),
         })),
       };
 
-      // Send data to backend
-      await axios.put("http://192.168.56.1:5000/api/products/update-production-batch-products", payload);
+      console.log("Payload being sent:", payload);
+
+      await axios.put(
+        "http://192.168.56.1:5000/api/products/production-batch/update-products",
+        payload
+      );
+
       toast.success("Batch products updated successfully!");
-      setSelectedProducts([]);
-      setSaveEnabled(false); // Disable save button after saving
+
+      // Re-fetch the updated batch from the backend to ensure you have the latest data
+      const response = await axios.get(
+        `http://192.168.56.1:5000/api/products/production-batch/${productionBatchCode}`
+      );
+      setSelectedProducts(response.data.updatedBatch.selectedProducts);
+
+      setSaveEnabled(false); // Disable the save button after saving
     } catch (error) {
       console.error("Error saving batch products:", error);
       toast.error("Failed to save products");
     }
   };
-  
-  
+
   // Handle editing qty and price in the main grid
-  const handleQtyPriceChange = (params) => {
+  const handleQtyPriceChange = (updatedRow) => {
     const updatedBatchProducts = selectedProducts.map((product) => {
-      if (product.id === params.id) {
-        return { ...product, [params.field]: params.value };
+      if (product.id === updatedRow.id) {
+        return {
+          ...product,
+          in_stock_quantity: updatedRow.in_stock_quantity,
+          price: updatedRow.price,
+        };
       }
       return product;
     });
-    setSelectedProducts(updatedBatchProducts);
+
+    console.log("Updated Batch Products:", updatedBatchProducts);
+
+    setSelectedProducts(updatedBatchProducts); // Ensure state is updated correctly
+    setSaveEnabled(true); // Enable save button
+    return updatedRow;
   };
 
   return (
     <div className="container mx-auto p-8">
       <div className="bg-white rounded-lg shadow-lg p-6 mt-4">
-        <h2 className="text-2xl font-bold text-green-700 mb-6">Add Production Batch</h2>
+        <h2 className="text-2xl font-bold text-green-700 mb-6">
+          Add Production Batch
+        </h2>
 
         <div className="grid grid-cols-3 gap-8">
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Production Batch Code</label>
-            <input type="text" className="w-full p-3 border rounded-lg" value={productionBatchCode} readOnly />
+            <label className="block text-gray-700 mb-2">
+              Production Batch Code
+            </label>
+            <input
+              type="text"
+              className="w-full p-3 border rounded-lg"
+              value={productionBatchCode}
+              readOnly
+            />
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Created Date & Time</label>
-            <input type="text" className="w-full p-3 border rounded-lg" value={createdDate} readOnly />
+            <label className="block text-gray-700 mb-2">
+              Created Date & Time
+            </label>
+            <input
+              type="text"
+              className="w-full p-3 border rounded-lg"
+              value={createdDate}
+              readOnly
+            />
           </div>
 
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">Created By</label>
-            <input type="text" className="w-full p-3 border rounded-lg" value={createdBy} readOnly />
+            <input
+              type="text"
+              className="w-full p-3 border rounded-lg"
+              value={createdBy}
+              readOnly
+            />
           </div>
 
           <div className="mb-4 col-span-3">
@@ -255,13 +307,19 @@ function AddProductionBatch() {
         {/* Display Selected Products with qty and price */}
         {selectedProducts.length > 0 && (
           <div className="mt-8">
-            <h3 className="text-xl font-bold mb-4">Selected Products for Production Batch</h3>
+            <h3 className="text-xl font-bold mb-4">
+              Selected Products for Production Batch
+            </h3>
             <div style={{ height: 400, width: "100%" }}>
               <DataGrid
                 rows={selectedProducts}
                 columns={[
                   { field: "id", headerName: "ID", width: 100 },
-                  { field: "product_name", headerName: "Product Name", width: 200 },
+                  {
+                    field: "product_name",
+                    headerName: "Product Name",
+                    width: 200,
+                  },
                   {
                     field: "in_stock_quantity",
                     headerName: "Quantity",
@@ -276,7 +334,7 @@ function AddProductionBatch() {
                   },
                 ]}
                 pageSize={5}
-                onCellEditCommit={handleQtyPriceChange} // Handle editing in the grid
+                processRowUpdate={handleQtyPriceChange} // Handle editing in the grid
               />
             </div>
             {/* Display Save button if changes are made */}
@@ -307,7 +365,11 @@ function AddProductionBatch() {
                     rows={products}
                     columns={[
                       { field: "id", headerName: "ID", width: 100 },
-                      { field: "product_name", headerName: "Product Name", width: 150 },
+                      {
+                        field: "product_name",
+                        headerName: "Product Name",
+                        width: 150,
+                      },
                     ]}
                     checkboxSelection
                     onRowClick={handleProductSelect}
@@ -339,7 +401,11 @@ function AddProductionBatch() {
                     rows={selectedProducts}
                     columns={[
                       { field: "id", headerName: "ID", width: 100 },
-                      { field: "product_name", headerName: "Product Name", width: 150 },
+                      {
+                        field: "product_name",
+                        headerName: "Product Name",
+                        width: 150,
+                      },
                     ]}
                     checkboxSelection
                     onRowClick={handleProductSelect}

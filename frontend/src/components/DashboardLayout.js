@@ -270,7 +270,7 @@ const DashboardLayout = () => {
         }}
       >
         <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <main className="flex-1 p-6 bg-gray-100 overflow-hidden">
+        <main className="flex-1 p-6 bg-gray-100 overflow-auto">
           <Breadcrumb paths={breadcrumbPaths} onClick={handleContentChange} />
           {renderContent()}
         </main>

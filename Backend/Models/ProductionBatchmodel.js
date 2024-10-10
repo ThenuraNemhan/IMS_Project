@@ -33,11 +33,13 @@ const ProductionBatchSchema = new mongoose.Schema({
     },
     in_stock_quantity: {
       type: Number,
-      required: false,
+      //default: 0,
+      required: true,
     },
     price: {
       type: Number,
-      required: false,
+      //default: 0,
+      required: true,
     }
   }],
 });

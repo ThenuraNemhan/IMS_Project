@@ -9,17 +9,21 @@ function ProductCateogry({ onAddProductCategoryClick }) {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sort] = useState({ field: 'category_name', direction: 'asc' });
+  const [sort] = useState({ field: "category_name", direction: "asc" });
+  const [selectedSearchField, setSelectedSearchField] =
+    useState("category_name"); // New state for search field
 
   useEffect(() => {
     // Fetch category from the API when the component mounts
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/categories");
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/categories"
+        );
         // Map the category to include an id field
-        const categoryWithId = response.data.categories.map(category => ({
+        const categoryWithId = response.data.categories.map((category) => ({
           ...category,
-          id: category.category_code // Assign _id to id
+          id: category.category_code, // Assign _id to id
         }));
         setCategories(categoryWithId); // // Set category with id field
       } catch (error) {
@@ -45,37 +49,57 @@ function ProductCateogry({ onAddProductCategoryClick }) {
   //   }));
   // };
 
-  const filteredCategories = categories.filter(category =>
-    category.category_name && category.category_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Filter and sort the production batches
+  const filteredCategories = categories
+    .filter((category) => {
+      switch (selectedSearchField) {
+        case "category_code":
+          return (
+            category.category_code &&
+            category.category_code
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        case "category_name":
+          return (
+            category.category_name &&
+            category.category_name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+          );
+        default:
+          return false;
+      }
+    })
     .sort((a, b) => {
-      if (a[sort.field] < b[sort.field]) return sort.direction === 'asc' ? -1 : 1;
-      if (a[sort.field] > b[sort.field]) return sort.direction === 'asc' ? 1 : -1;
+      if (a[sort.field] < b[sort.field])
+        return sort.direction === "asc" ? -1 : 1;
+      if (a[sort.field] > b[sort.field])
+        return sort.direction === "asc" ? 1 : -1;
       return 0;
-    }
-  );
+    });
 
   const columns = [
-    { field: 'category_code', headerName: 'ID', width: 100 }, // Use id here
-      { field: 'category_name', headerName: 'Category Name', width: 150 },
-      {
-        field: 'action',
-        headerName: 'Action',
-        width: 150,
-        renderCell: (params) => (
-          <div className="flex justify-left items-left w-10 h-10">
-            <button
-              onClick={() => handleCategoryClick(params.row)}
-              className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
-            >
-              <FaEdit className="text-white mr-2" />
-              Edit
-            </button>
-          </div>
-        )
-      }
-  ]
-  
+    { field: "category_code", headerName: "ID", width: 100 }, // Use id here
+    { field: "category_name", headerName: "Category Name", width: 150 },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 150,
+      renderCell: (params) => (
+        <div className="flex justify-left items-left w-10 h-10">
+          <button
+            onClick={() => handleCategoryClick(params.row)}
+            className="bg-blue-500 text-white px-2 py-1 flex items-center rounded-lg"
+          >
+            <FaEdit className="text-white mr-2" />
+            Edit
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex h-screen">
       {/* Main Content */}
@@ -94,10 +118,23 @@ function ProductCateogry({ onAddProductCategoryClick }) {
         {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
+            {/* Dropdown for selecting the search field */}
+            <div className="mr-4">
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg"
+                value={selectedSearchField}
+                onChange={(e) => setSelectedSearchField(e.target.value)}
+              >
+                <option value="category_name">Category Name</option>
+                <option value="category_code">Category Code</option>
+              </select>
+            </div>
+
+            {/* Search input */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search categories here"
+                placeholder="Search Batch here"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"

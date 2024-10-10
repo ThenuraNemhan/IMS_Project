@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import Grid from "../components/Grid"; // Import the Grid component
 import { FaEdit } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -10,7 +10,9 @@ function Organizations({ onAddOrganizationClick }) {
   const [organizations, setOrganizations] = useState([]);
   const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sort, setSort] = useState({ field: "company_name", direction: "asc" });
+  const [sort] = useState({ field: "organization_name", direction: "asc" });
+  const [selectedSearchField, setSelectedSearchField] = useState("organization_name"); // New state for search field
+
 
   useEffect(() => {
     // Fetch organizations from the API when the component mounts
@@ -48,28 +50,41 @@ function Organizations({ onAddOrganizationClick }) {
     setSelectedOrganization(null);
   };
 
-  const handleSortChange = (field) => {
-    setSort((prev) => ({
-      field,
-      direction: prev.direction === "asc" ? "desc" : "asc",
-    }));
-  };
-
-  const filteredOrganizations = organizations
-    .filter(
-      (organization) =>
-        organization.organization_name &&
-        organization.organization_name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (a[sort.field] < b[sort.field])
-        return sort.direction === "asc" ? -1 : 1;
-      if (a[sort.field] > b[sort.field])
-        return sort.direction === "asc" ? 1 : -1;
-      return 0;
-    });
+ // Filter and sort the production batches
+ const filteredOrganizations = organizations
+ .filter((organization) => {
+   switch (selectedSearchField) {
+     case "organization_code":
+       return (
+         organization.organization_code &&
+         organization.organization_code.toLowerCase().includes(searchTerm.toLowerCase())
+       );
+     case "organization_name":
+       return (
+         organization.organization_name &&
+         organization.organization_name.toLowerCase().includes(searchTerm.toLowerCase())
+       );
+    case "organization_BRN":
+      return (
+        organization.organization_BRN &&
+        organization.organization_BRN.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      case "owner_name":
+        return (
+          organization.owner_name &&
+          organization.owner_name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+     default:
+       return false;
+   }
+ })
+ .sort((a, b) => {
+   if (a[sort.field] < b[sort.field])
+     return sort.direction === "asc" ? -1 : 1;
+   if (a[sort.field] > b[sort.field])
+     return sort.direction === "asc" ? 1 : -1;
+   return 0;
+ });
 
   const columns = [
     { field: "organization_code", headerName: "ID", width: 90 }, // Use id here
@@ -168,10 +183,25 @@ function Organizations({ onAddOrganizationClick }) {
         {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
+            {/* Dropdown for selecting the search field */}
+            <div className="mr-4">
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg"
+                value={selectedSearchField}
+                onChange={(e) => setSelectedSearchField(e.target.value)}
+              >
+                <option value="organization_name">Organization Name</option>
+                <option value="organization_code">Code</option>
+                <option value="organization_BRN">Organization BRN</option>
+                <option value="owner_name">Owner Name</option>
+              </select>
+            </div>
+
+            {/* Search input */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search organizations here"
+                placeholder="Search Batch here"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
@@ -179,21 +209,6 @@ function Organizations({ onAddOrganizationClick }) {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <FontAwesomeIcon icon={faSearch} className="text-gray-500" />
               </div>
-            </div>
-            {/* Organization Sorting */}
-            <div className="flex space-x-4 items-center">
-              <label className="px-1 py-2 block text-gray-700 flex items-center">
-                <span className="mr-2">Sort</span>
-                <FontAwesomeIcon icon={faFilter} className="text-gray-700" />
-              </label>
-              <select
-                className="px-4 py-2 border border-gray-300 rounded-lg w-full h-10"
-                onChange={(e) => handleSortChange(e.target.value)}
-              >
-                <option value="">Select </option>
-                <option value="organization_name">Organization Name</option>
-                {/* Add more sorting options if needed */}
-              </select>
             </div>
           </div>
 

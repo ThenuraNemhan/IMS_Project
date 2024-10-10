@@ -11,6 +11,7 @@ function Units({ onAddUnitClick }) {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sort] = useState({ field: "unit_name", direction: "asc" });
+  const [selectedSearchField, setSelectedSearchField] = useState("unit_name"); // New state for search field
 
   useEffect(() => {
     // Fetch units from the API when the component mounts
@@ -39,19 +40,24 @@ function Units({ onAddUnitClick }) {
     setSelectedUnit(null);
   };
 
-  // const handleSortChange = (field) => {
-  //   setSort((prev) => ({
-  //     field,
-  //     direction: prev.direction === 'asc' ? 'desc' : 'asc'
-  //   }));
-  // };
-
+  // Filter and sort the production batches
   const filteredUnits = units
-    .filter(
-      (unit) =>
-        unit.unit_name &&
-        unit.unit_name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((unit) => {
+      switch (selectedSearchField) {
+        case "unit_code":
+          return (
+            unit.unit_code &&
+            unit.unit_code.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        case "unit_name":
+          return (
+            unit.unit_name &&
+            unit.unit_name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        default:
+          return false;
+      }
+    })
     .sort((a, b) => {
       if (a[sort.field] < b[sort.field])
         return sort.direction === "asc" ? -1 : 1;
@@ -134,10 +140,23 @@ function Units({ onAddUnitClick }) {
         {/* Search and Filter */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex justify-between mb-4 items-center">
+            {/* Dropdown for selecting the search field */}
+            <div className="mr-4">
+              <select
+                className="px-4 py-2 border border-gray-300 rounded-lg"
+                value={selectedSearchField}
+                onChange={(e) => setSelectedSearchField(e.target.value)}
+              >
+                <option value="unit_name">Unit Name</option>
+                <option value="unit_code">Unit Code</option>
+              </select>
+            </div>
+
+            {/* Search input */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search units here"
+                placeholder="Search Batch here"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="px-4 py-2 pl-10 border border-gray-300 rounded-lg w-full max-w-xs md:max-w-sm lg:max-w-md"
