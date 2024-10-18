@@ -16,6 +16,7 @@ function AddProductionBatch() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   //const [batchProducts, setBatchProducts] = useState([]); // Products to display in the main form grid with qty and price
   const [saveEnabled, setSaveEnabled] = useState(false); // Toggle save button visibility
+  const [currentUser, setCurrentUser] = useState(""); // To hold the current user's information
 
   // Fetch products and locations
   useEffect(() => {
@@ -49,8 +50,26 @@ function AddProductionBatch() {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token"); // Assuming you store the token in local storage
+      try {
+        const response = await axios.get(
+          "http://192.168.56.1:5000/api/users/production-batch-created-user",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Send the token in the header
+            },
+          }
+        );
+        setCurrentUser(response.data.username || ""); // Assume the API returns the username
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+
     fetchProducts();
     fetchLocations();
+    fetchCurrentUser();
   }, []);
 
   // Generate Batch Code on load
@@ -70,7 +89,7 @@ function AddProductionBatch() {
         const code = `PB-${year}-${month}-${batchNumber}`;
         setProductionBatchCode(code);
         setCreatedDate(new Date().toLocaleString());
-        setCreatedBy("Current User"); // Replace with the logged-in user
+        setCreatedBy(currentUser); // Replace with the logged-in user
       } catch (error) {
         console.error("Error fetching batch number:", error);
         toast.error("Failed to generate batch number.");
@@ -78,7 +97,7 @@ function AddProductionBatch() {
     };
 
     generateBatchCode();
-  }, []);
+  }, [currentUser]); // Dependency array now includes currentUser
 
   const handleAddProducts = async () => {
     if (!description || !selectedLocation) {
@@ -91,19 +110,38 @@ function AddProductionBatch() {
       productionBatchCode,
       description,
       location: selectedLocation,
-      selectedProducts: [], // add the products to Production Batch
+      selectedProducts: selectedProducts.map((product) => ({
+        product_name: product.product_name,
+        in_stock_quantity: product.in_stock_quantity || 0, // default to 0 if undefined
+        price: product.price || 0, // default to 0 if undefined
+      })),
     };
 
     try {
-      // Send data to backend
+      // Get the token from localStorage (or sessionStorage)
+      const token = localStorage.getItem("token");
+
+      // Ensure token is available
+      if (!token) {
+        toast.error("No authentication token found, please login again.");
+        return;
+      }
+
+      // Send data to backend with Authorization header
       const response = await axios.post(
         "http://192.168.56.1:5000/api/products/production-batch/add",
-        payload
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token to the request headers
+          },
+        }
       );
+
       toast.success("Production Batch created successfully!");
 
       // Store the batch code to use when adding products
-      const createdBatchCode = response.data.productionBatchCode; // Change here
+      const createdBatchCode = response.data.productionBatchCode; // Get batch code from response
       setProductionBatchCode(createdBatchCode); // Set the correct batch code
       setIsModalOpen(true); // Open modal to add products
     } catch (error) {
@@ -179,7 +217,7 @@ function AddProductionBatch() {
       const payload = {
         productionBatchCode: productionBatchCode, // Ensure you're using the correct productionBatchCode
         updatedProducts: selectedProducts.map((product) => ({
-          product_code: product.id, // Ensure this is the correct product identifier
+          product_code: product.product_code, // Match the product_code inside the product object
           in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
           price: Number(product.price),
         })),
@@ -194,11 +232,11 @@ function AddProductionBatch() {
 
       toast.success("Batch products updated successfully!");
 
-      // Re-fetch the updated batch from the backend to ensure you have the latest data
-      const response = await axios.get(
-        `http://192.168.56.1:5000/api/products/production-batch/${productionBatchCode}`
-      );
-      setSelectedProducts(response.data.updatedBatch.selectedProducts);
+      // Optionally re-fetch the updated batch to ensure the data was updated correctly
+      // const response = await axios.get(
+      //   `http://192.168.56.1:5000/api/products/production-batch/${productionBatchCode}`
+      // );
+      // setSelectedProducts(response.data.updatedBatch.selectedProducts);
 
       setSaveEnabled(false); // Disable the save button after saving
     } catch (error) {

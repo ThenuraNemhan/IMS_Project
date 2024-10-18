@@ -42,7 +42,7 @@ export const createProductionBatch = async (req, res) => {
       description,
       location: locationDoc._id,
       selectedProducts: productData, // Save product data with quantities and prices
-      createdBy: "Current User",
+      createdBy: req.user.username, // Use the logged-in user's username
       createdDate: new Date(),
     });
 
@@ -133,11 +133,17 @@ export const updateProductDetailsInBatch = async (req, res) => {
 
     // Ensure updatedProducts is an array
     if (!updatedProducts || !Array.isArray(updatedProducts)) {
-      return res.status(400).json({ message: "updatedProducts is required and should be an array" });
+      return res
+        .status(400)
+        .json({
+          message: "updatedProducts is required and should be an array",
+        });
     }
 
     // Find the production batch using productionBatchCode
-    const productionBatch = await ProductionBatch.findOne({ productionBatchCode });
+    const productionBatch = await ProductionBatch.findOne({
+      productionBatchCode,
+    });
     if (!productionBatch) {
       return res.status(404).json({ message: "Production batch not found" });
     }
@@ -147,22 +153,28 @@ export const updateProductDetailsInBatch = async (req, res) => {
       const { product_code, price, in_stock_quantity } = product;
 
       // Log to verify the incoming data
-      console.log(`Product Code: ${product_code}, Qty: ${in_stock_quantity}, Price: ${price}`);
+      console.log(
+        `Product Code: ${product_code}, Qty: ${in_stock_quantity}, Price: ${price}`
+      );
 
       // Ensure price and quantity are numbers
       if (isNaN(price) || isNaN(in_stock_quantity)) {
-        return res.status(400).json({ message: "Invalid price or quantity values" });
+        return res
+          .status(400)
+          .json({ message: "Invalid price or quantity values" });
       }
 
-      // Find the product in the batch using product's ObjectId
+      // Find the product in the batch using product's product_code inside the product object
       const productToUpdate = productionBatch.selectedProducts.find(
-        (p) => p.product.toString() === product_code
+        (p) => p.product.product_code === product_code // Match the product_code inside the product object
       );
 
       if (productToUpdate) {
         // Update the price and quantity as numbers
         productToUpdate.price = Number(price);
         productToUpdate.in_stock_quantity = Number(in_stock_quantity);
+      } else {
+        console.log(`Product with code ${product_code} not found in the batch`);
       }
     });
 
@@ -180,7 +192,6 @@ export const updateProductDetailsInBatch = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 export const getProductionBatches = async (req, res) => {
   try {
@@ -218,6 +229,29 @@ export const getLatestProductionBatchNumber = async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to fetch latest batch number", error });
+  }
+};
+
+export const getProductionBatchByCode = async (req, res) => {
+  try {
+    const { productionBatchCode } = req.params;
+
+    // Find the production batch by the provided code
+    const productionBatch = await ProductionBatch.findOne({
+      productionBatchCode,
+    }).populate("selectedProducts.product");
+
+    if (!productionBatch) {
+      return res.status(404).json({ message: "Production batch not found" });
+    }
+
+    res.status(200).json({
+      message: "Production batch fetched successfully",
+      productionBatch,
+    });
+  } catch (error) {
+    console.error("Error fetching production batch:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 

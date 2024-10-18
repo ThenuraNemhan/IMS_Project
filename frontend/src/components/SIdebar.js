@@ -18,13 +18,17 @@ import {
   faCartFlatbed,
   faCartFlatbedSuitcase,
   faCartArrowDown,
+  faSignOutAlt,
 } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({ onContentChange }) => {
   const [isInventoryOpen, setInventoryOpen] = useState(false);
   const [isProductionOpen, setProductionOpen] = useState(false);
   const [isOrdersOpen, setOrdersOpen] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState("user-dashboard");
+
+  const navigate = useNavigate(); // Use navigate for redirection
 
   const toggleInventoryDropdown = () => {
     setInventoryOpen(!isInventoryOpen);
@@ -41,6 +45,14 @@ const Sidebar = ({ onContentChange }) => {
   const handleMenuItemClick = (menuItem) => {
     setActiveMenuItem(menuItem);
     onContentChange(menuItem);
+  };
+
+  const handleLogout = () => {
+    // Clear local storage and navigate to login page
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    navigate("/login");
   };
 
   return (
@@ -268,6 +280,17 @@ const Sidebar = ({ onContentChange }) => {
           <FontAwesomeIcon icon={faCog} className="mr-3" />
           Settings
         </button>
+
+        {/* Logout Button */}
+        <div className="absolute bottom-10 w-full">
+          <button
+            onClick={handleLogout}
+            className="flex items-center py-2 px-4 w-full text-left hover:bg-gray-700 focus:outline-none"
+          >
+            <FontAwesomeIcon icon={faSignOutAlt} className="mr-3" />
+            Logout
+          </button>
+        </div>
       </nav>
     </div>
   );

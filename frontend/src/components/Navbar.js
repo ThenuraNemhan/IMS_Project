@@ -8,8 +8,8 @@ import {
   faBars,
 } from "@fortawesome/free-solid-svg-icons";
 import profileImage from "./face10.jpg";
-import Flag from 'react-flagkit';
-import { useTranslation } from 'react-i18next'; // Import useTranslation hook
+import Flag from "react-flagkit";
+import { useTranslation } from "react-i18next"; // Import useTranslation hook
 
 const languages = [
   { code: "US", name: "English", flag: "US" },
@@ -17,7 +17,7 @@ const languages = [
   // Add more languages as needed
 ];
 
-function Navbar({ toggleSidebar}) {
+function Navbar({ toggleSidebar, username }) {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState("US");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -41,8 +41,11 @@ function Navbar({ toggleSidebar}) {
         </button>
 
         <div>
-          <h1 className="text-lg font-semibold">{t('hello_user')}</h1>
-          <p className="text-sm text-gray-600">{t('welcome')}</p>
+          {/* Display the username or "Guest" if not logged in */}
+          <h1 className="text-lg font-semibold">
+            {t("hello_user")} {username ? username : t("guest_user")}
+          </h1>
+          <p className="text-sm text-gray-600">{t("welcome")}</p>
         </div>
       </div>
 
@@ -50,7 +53,7 @@ function Navbar({ toggleSidebar}) {
         <div className="relative">
           <input
             type="text"
-            placeholder={t('search_placeholder')}
+            placeholder={t("search_placeholder")}
             className="pl-4 pr-8 py-2 rounded-full bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <div className="absolute right-2 top-2 text-gray-500">

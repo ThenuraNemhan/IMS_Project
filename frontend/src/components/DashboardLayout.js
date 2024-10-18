@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar.js";
 import Sidebar from "./SIdebar.js";
 import Products from "../screens/Products.js";
@@ -32,10 +32,26 @@ import Users from "../screens/Users.js";
 import AddUser from "../screens/AddUser.js";
 import ProductBatch from "../screens/ProductBatch.js";
 import AddProductionBatch from "../screens/AddProductionBatch.js";
+import { useNavigate } from "react-router-dom";
 
 const DashboardLayout = () => {
   const [activeContent, setActiveContent] = useState("user-dashboard"); // Default to 'user-dashboard'
   const [isSidebarOpen, setSidebarOpen] = useState(true); // State to manage sidebar visibility
+  const navigate = useNavigate();
+
+  // Fetch the username from local storage
+  const username = localStorage.getItem('username');
+
+  // UseEffect to check if user is logged in and is Global Admin
+  useEffect(() => {
+    const role = localStorage.getItem('role');
+    const token = localStorage.getItem('token');
+
+    if (!token || role !== 'Main Admin') {
+      // If no token or role is not Global Admin, redirect to login
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const [breadcrumbPaths, setBreadcrumbPaths] = useState([
     {
@@ -269,7 +285,7 @@ const DashboardLayout = () => {
           width: isSidebarOpen ? "calc(100% - 16rem)" : "100%",
         }}
       >
-        <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+        <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} username={username} />
         <main className="flex-1 p-6 bg-gray-100 overflow-auto">
           <Breadcrumb paths={breadcrumbPaths} onClick={handleContentChange} />
           {renderContent()}

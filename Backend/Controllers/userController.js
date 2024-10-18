@@ -1,83 +1,116 @@
-import bcrypt from "bcryptjs";
+import User from "../Models/Usermodel.js"; // Adjust the import path as necessary
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../Models/Usermodel.js";
-import generateUserCode from "../utils/generateUserCode.js";
+import crypto from "crypto";
+import dotenv from "dotenv";
 
-// Generate JWT Token
-const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      username: user.username,
-      role: user.role,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: "30d" } // Token expires in 30 days
-  );
-};
+dotenv.config();
 
-// User Registration Controller
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+
+// Register User Controller (admin creates user)
 export const registerUser = async (req, res) => {
   const { username, user_email, password, role } = req.body;
 
-  // Validate the request data
-  if (!username || !user_email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Username, email, and password are required.",
-    });
-  }
-
   try {
-    // Check if email already exists
-    const existingUser = await User.findOne({ user_email });
+    // Check if username already exists
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is already in use.",
-      });
+      return res
+        .status(400)
+        .json({ message: "User with this username already exists." });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user_code = await generateUserCode("USR"); // Generate the user code
+    // Generate unique user_code
+    const user_code = crypto.randomBytes(4).toString("hex"); // Example: 8-character hex
 
-    const user = new User({
-      user_code, // Use the generated user_code
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      user_code,
       username,
       user_email,
       password: hashedPassword,
       role,
-      status: "Active", // Default status to "Active"
+      status: "Active",
     });
 
-    await user.save();
+    await newUser.save();
 
-    // Generate Token after registration
-    const token = generateToken(user);
-
-    res.status(201).json({
-      success: true,
-      data: {
-        user_code: user.user_code,
-        username: user.username,
-        role: user.role,
-      },
-      token,
-    });
+    res.status(201).json({ message: "User created successfully." });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
-//Get Users
+// User Login Controller
+export const loginUser = async (req, res) => {
+  const { username, password, role } = req.body;
+
+  try {
+    const user = await User.findOne({ username, role });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Validate user role
+    if (role !== user.role) {
+      return res.status(401).json({ message: "Invalid user type" });
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).json({
+      token,
+      data: {
+        username: user.username,
+        role: user.role,
+        user_code: user.user_code,
+      },
+    });
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getUser = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    const user = await User.findById(req.user.id).select('username role user_code');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Error fetching users. Please try again." });
+  }
+};
+
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find()
+      .exec();
+
     res.status(200).json({ users });
   } catch (error) {
     console.error("Error fetching users:", error);
-    res
-      .status(500)
-      .json({ message: "Error fetching users. Please try again." });
+    res.status(500).json({ message: "Error fetching users. Please try again." });
   }
 };
+
+
+

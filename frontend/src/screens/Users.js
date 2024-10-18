@@ -10,23 +10,33 @@ function Users({ onAddUserClick }) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
 
   useEffect(() => {
     // Fetch users from the API when the component mounts
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "http://192.168.56.1:5000/api/users"
-        );
-        // Map the customers to include an id field
-        const usersWithId = response.data.users.map((user) => ({
-          ...user,
-          id: user.user_code, // Assign _id to id
-        }));
-        setUsers(usersWithId); // Set users with id field
+        const response = await axios.get("http://192.168.56.1:5000/api/users", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        // Ensure response.data exists before accessing users
+        if (response.data && response.data.users) {
+          const usersWithId = response.data.users.map((user) => ({
+            ...user,
+            id: user.user_code,
+          }));
+          setUsers(usersWithId);
+        } else {
+          console.error("Unexpected response structure:", response);
+        }
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error(
+          "Error fetching users:",
+          error.response ? error.response.data.message : error.message
+        );
+        toast.error("Failed to fetch users. Please try again."); // Notify the user
       }
     };
 
@@ -101,9 +111,7 @@ function Users({ onAddUserClick }) {
       toast.success("User Updated Succesfully");
       setSelectedUser(null);
       // Refresh the User list
-      const response = await axios.get(
-        "http://192.168.56.1:5000/api/users"
-      );
+      const response = await axios.get("http://192.168.56.1:5000/api/users");
       setUsers(response.data.users);
     } catch (error) {
       console.error("Error updating user:", error);
@@ -119,9 +127,7 @@ function Users({ onAddUserClick }) {
       toast.success("User Deleted Succesfully");
       setSelectedUser(null);
       // Refresh the User list
-      const response = await axios.get(
-        "http://192.168.56.1:5000/api/users"
-      );
+      const response = await axios.get("http://192.168.56.1:5000/api/users");
       setUsers(response.data.users);
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -181,9 +187,7 @@ function Users({ onAddUserClick }) {
                   </h2>
                   {/* user name */}
                   <div className="mb-4">
-                    <label className="block text-gray-700">
-                      User Name
-                    </label>
+                    <label className="block text-gray-700">User Name</label>
                     <input
                       type="text"
                       value={selectedUser.username}

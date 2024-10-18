@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Form } from "react-bootstrap";
-import "@fortawesome/fontawesome-free/css/all.min.css"; // Import Font Awesome icons
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { toast } from "react-toastify";
 
 function Login() {
-  const [userType, setUserType] = useState("User");
+  const [role, setUserRole] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -12,7 +13,7 @@ function Login() {
   const navigate = useNavigate();
 
   const handleUserTypeChange = (event) => {
-    setUserType(event.target.value);
+    setUserRole(event.target.value);
   };
 
   const handleChange = (event) => {
@@ -28,36 +29,53 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Validate user type
+    if (!role) {
+      toast.error("Please select a user type."); // Show error toast for missing user type
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, role: userType }) // Pass userType (role)
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, role }),
       });
 
       const data = await response.json();
-      if (!response.ok) {
-        setError(data.message);
+
+      // Log the entire response for debugging
+      console.log("Login response:", data);
+
+      // Check for successful response status
+      if (!response.ok || !data.token) {
+        // Check if the token exists
+        setError(data.message || "Login failed"); // Set default message if none is provided
+        toast.error(data.message || "Login failed. Please try again."); // Show error toast
         return;
       }
 
-      // Store token and user role in local storage for persistence
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.data.role);
-      localStorage.setItem('user_code', data.data.user_code); // Save user_code
+      // Store token and user role in localStorage for persistence
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.data.role);
+      localStorage.setItem("user_code", data.data.user_code);
+      localStorage.setItem("username", data.data.username); // Store username
 
-      // Navigate to the respective dashboard based on role
-      if (data.data.role === 'Main Admin') {
-        navigate(`/mainadmin-dashboard`);
-      } else if (data.data.role === 'Company Admin') {
-        navigate(`/companyadmin-dashboard`);
+      // Show success toast and redirect based on role
+      toast.success("Login successful!"); // Show success toast
+
+      // Redirect based on role
+      if (data.data.role === "Main Admin") {
+        navigate("/mainadmin-dashboard");
+      } else if (data.data.role === "Company Admin") {
+        navigate("/companyadmin-dashboard");
       } else {
-        navigate(`/user-dashboard`);
+        navigate("/user-dashboard");
       }
-
     } catch (error) {
-      console.error('Error logging in:', error);
-      setError('Something went wrong. Please try again.');
+      console.error("Error logging in:", error);
+      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again."); // Show error toast
     }
   };
 
@@ -97,11 +115,12 @@ function Login() {
             <Form.Group className="relative">
               <Form.Control
                 as="select"
-                name="userType"
-                value={userType}
+                name="role"
+                value={role}
                 onChange={handleUserTypeChange}
                 className="pl-3 w-full pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
               >
+                <option value="">Select User Type</option>
                 <option value="User">User</option>
                 <option value="Company Admin">Company Admin</option>
                 <option value="Main Admin">Main Admin</option>
@@ -128,7 +147,10 @@ function Login() {
                 Keep me signed in
               </label>
             </div>
-            <Link to="/forgot-password" className="text-blue-500 hover:underline">
+            <Link
+              to="/forgot-password"
+              className="text-blue-500 hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
