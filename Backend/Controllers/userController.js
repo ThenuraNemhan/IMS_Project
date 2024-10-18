@@ -1,8 +1,9 @@
 import User from "../Models/Usermodel.js"; // Adjust the import path as necessary
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
+//import crypto from "crypto";
 import dotenv from "dotenv";
+import generateUserCode from '../utils/generateUserCode.js';
 
 dotenv.config();
 
@@ -22,7 +23,9 @@ export const registerUser = async (req, res) => {
     }
 
     // Generate unique user_code
-    const user_code = crypto.randomBytes(4).toString("hex"); // Example: 8-character hex
+    // const user_code = crypto.randomBytes(4).toString("hex"); // Example: 8-character hex
+
+    const user_code = await generateUserCode('US'); // Use a prefix if needed
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);

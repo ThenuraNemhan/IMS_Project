@@ -43,7 +43,7 @@ function Navbar({ toggleSidebar, username }) {
         <div>
           {/* Display the username or "Guest" if not logged in */}
           <h1 className="text-lg font-semibold">
-            {t("hello_user")} {username ? username : t("guest_user")}
+            {t("hello_user")} {username}
           </h1>
           <p className="text-sm text-gray-600">{t("welcome")}</p>
         </div>

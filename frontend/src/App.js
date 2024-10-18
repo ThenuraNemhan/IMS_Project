@@ -10,15 +10,18 @@ import "./i18n";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState("");
+  const [username, setUsername] = useState(""); // Add username state
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userRole = localStorage.getItem("role");
+    const storedUsername = localStorage.getItem("username"); // Get username
 
-    if (token && userRole) {
+    if (token && userRole && storedUsername) {
       setIsAuthenticated(true);
       setRole(userRole);
+      setUsername(storedUsername); // Set username state
     }
   }, []);
 
@@ -37,6 +40,14 @@ function App() {
 
   return (
     <>
+      <div>
+        {/* Display the username only if the user is authenticated */}
+        {isAuthenticated && (
+          <h1 className="text-lg font-semibold">
+            {`Hello, ${username}`}
+          </h1>
+        )}
+      </div>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<DashboardLayout />} />
