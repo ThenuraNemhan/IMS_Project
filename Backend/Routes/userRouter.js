@@ -17,6 +17,7 @@ router.post("/login", loginUser);
 
 // Get User
 router.get("/production-batch-created-user", authenticateUser, getUser);
+router.get("/order-cycle-created-user", authenticateUser, getUser);
 router.get("/", getUsers);
 
 export default router;

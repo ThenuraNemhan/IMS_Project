@@ -139,8 +139,8 @@ function AddCustomer() {
             </div>
           )}
         </div>
-        {toast.error && <p className="text-red-500">{toast.error}</p>}
-        {toast.message && <p className="text-green-500">{toast.message}</p>}
+        {/* {toast.error && <p className="text-red-500">{toast.error}</p>}
+        {toast.message && <p className="text-green-500">{toast.message}</p>} */}
       </div>
       <div className="flex space-x-4 mt-6">
         <button

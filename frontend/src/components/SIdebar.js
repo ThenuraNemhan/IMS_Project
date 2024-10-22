@@ -16,9 +16,10 @@ import {
   faRecycle,
   faIndustry,
   faCartFlatbed,
-  faCartFlatbedSuitcase,
   faCartArrowDown,
   faSignOutAlt,
+  faArrowAltCircleDown,
+  faBagShopping,
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
@@ -222,7 +223,7 @@ const Sidebar = ({ onContentChange }) => {
                 : "hover:bg-gray-700"
             }`}
           >
-            <FontAwesomeIcon icon={faCartFlatbedSuitcase} className="mr-3" />
+            <FontAwesomeIcon icon={faBagShopping} className="mr-3" />
             Orders
             <FontAwesomeIcon
               icon={faChevronDown}
@@ -233,6 +234,17 @@ const Sidebar = ({ onContentChange }) => {
           </button>
           {isOrdersOpen && (
             <div className="pl-8">
+              <button
+                onClick={() => handleMenuItemClick("order-cycle")}
+                className={`flex items-center py-2 px-4 rounded w-full text-left ${
+                  activeMenuItem === "order-cycle"
+                    ? "bg-gray-700 text-gray-300"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                <FontAwesomeIcon icon={faArrowAltCircleDown} className="mr-3" />
+                Order Cycle
+              </button>
               <button
                 onClick={() => handleMenuItemClick("sales-orders")}
                 className={`flex items-center py-2 px-4 rounded w-full text-left ${

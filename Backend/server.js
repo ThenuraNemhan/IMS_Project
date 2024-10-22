@@ -10,6 +10,7 @@ import OrganizationRouter from './Routes/organizationRouter.js';
 import CustomerRouter from './Routes/customerRouter.js';
 import LocationRouter from './Routes/locationRouter.js';
 import UserRouter from './Routes/userRouter.js';
+import OrderRouter from './Routes/orderRouter.js';
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -45,6 +46,7 @@ app.use('/api/organizations', OrganizationRouter);
 app.use('/api/customers', CustomerRouter);
 app.use('/api/locations', LocationRouter);
 app.use('/api/users', UserRouter);
+app.use('/api/orders', OrderRouter);
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port: ${port}`);

@@ -17,6 +17,8 @@ import {
   FaUsers,
   FaRecycle,
   FaIndustry,
+  FaFirstOrder,
+  FaShopify,
 } from "react-icons/fa"; // Import icons
 import Units from "../screens/Units";
 import AddUnit from "../screens/AddUnit";
@@ -33,6 +35,8 @@ import AddUser from "../screens/AddUser.js";
 import ProductBatch from "../screens/ProductBatch.js";
 import AddProductionBatch from "../screens/AddProductionBatch.js";
 import { useNavigate } from "react-router-dom";
+import OrderCycle from "../screens/OrderCycle.js";
+import CreateNewOrderCycle from "../screens/CreateNewOrderCycle.js";
 
 const DashboardLayout = () => {
   const [activeContent, setActiveContent] = useState("user-dashboard"); // Default to 'user-dashboard'
@@ -40,16 +44,16 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
 
   // Fetch the username from local storage
-  const username = localStorage.getItem('username');
+  const username = localStorage.getItem("username");
 
   // UseEffect to check if user is logged in and is Global Admin
   useEffect(() => {
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
+    const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
 
-    if (!token || role !== 'Main Admin') {
+    if (!token || role !== "Main Admin") {
       // If no token or role is not Global Admin, redirect to login
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -64,22 +68,22 @@ const DashboardLayout = () => {
 
   // Define the hierarchy of the menu items
   const menuHierarchy = {
-    "products": {
+    products: {
       parent: "master-data",
       name: "Product",
       icon: <FaBox />,
     },
-    "units": {
+    units: {
       parent: "master-data",
       name: "Unit",
       icon: <FaBalanceScale />,
     },
-    "organizations": {
+    organizations: {
       parent: "master-data",
       name: "Organization",
       icon: <FaBuilding />,
     },
-    "customers": {
+    customers: {
       parent: "master-data",
       name: "Customer",
       icon: <FaUserTie />,
@@ -89,12 +93,12 @@ const DashboardLayout = () => {
       name: "Product Category",
       icon: <FaTags />,
     },
-    "locations": {
+    locations: {
       parent: "master-data",
       name: "Location",
       icon: <FaLocationArrow />,
     },
-    "users": {
+    users: {
       parent: "master-data",
       name: "User",
       icon: <FaUsers />,
@@ -139,7 +143,7 @@ const DashboardLayout = () => {
       name: "Add User",
       icon: <FaPlus />,
     },
-    "production": {
+    production: {
       parent: null,
       name: "Production",
       icon: <FaIndustry />,
@@ -154,7 +158,21 @@ const DashboardLayout = () => {
       name: "Add Production Batch",
       icon: <FaPlus />,
     },
-
+    orders: {
+      parent: null,
+      name: "Orders",
+      icon: <FaShopify />,
+    },
+    "order-cycle": {
+      parent: "orders",
+      name: "Order Cycle",
+      icon: <FaFirstOrder />,
+    },
+    "add-order-cycle": {
+      parent: "order-cycle",
+      name: "Add Order Cycle",
+      icon: <FaPlus />,
+    },
   };
 
   const handleContentChange = (content) => {
@@ -258,9 +276,23 @@ const DashboardLayout = () => {
       case "add-user":
         return <AddUser />;
       case "production-batch":
-        return <ProductBatch onAddProductBatchClick={() => handleContentChange("add-production-batch")}/>
-        case "add-production-batch":
+        return (
+          <ProductBatch
+            onAddProductBatchClick={() =>
+              handleContentChange("add-production-batch")
+            }
+          />
+        );
+      case "add-production-batch":
         return <AddProductionBatch />;
+      case "order-cycle":
+        return (
+          <OrderCycle
+            onAddOrderCycleClick={() => handleContentChange("add-order-cycle")}
+          />
+        );
+      case "add-order-cycle":
+        return <CreateNewOrderCycle />;
       default:
         return <div>Select a content from the sidebar</div>;
     }
@@ -285,7 +317,11 @@ const DashboardLayout = () => {
           width: isSidebarOpen ? "calc(100% - 16rem)" : "100%",
         }}
       >
-        <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} username={username} />
+        <Navbar
+          toggleSidebar={toggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+          username={username}
+        />
         <main className="flex-1 p-6 bg-gray-100 overflow-auto">
           <Breadcrumb paths={breadcrumbPaths} onClick={handleContentChange} />
           {renderContent()}

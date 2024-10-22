@@ -2,7 +2,7 @@
 import express from 'express';
 import authenticateUser from '../middleware/authMiddleware.js';
 import { addProduct, getProducts, updateProduct, deleteProduct } from '../Controllers/productController.js';
-import { createProductionBatch, addProductsToBatch, updateProductDetailsInBatch, getLatestProductionBatchNumber, getProductionBatches, getProductionBatchByCode} from '../Controllers/productionBatchController.js';
+import { createProductionBatch, addProductsToBatch, updateProductDetailsInBatch, getLatestProductionBatchNumber, getProductionBatches, getProductionBatchByCode, getLatestProductionBatchByLocation} from '../Controllers/productionBatchController.js';
 //import { uploadFiles } from '../config/multerConfig.js';
 
 const router = express.Router();
@@ -22,6 +22,9 @@ router.get('/production-batch', getProductionBatches);
 router.get('/production-batch/:productionBatchCode', getProductionBatchByCode); // New Route
 // router.put('/production-batch/update/:productionBatchCode', UpdateProductionBatch);
 // router.delete('/production-batch/delete/:productionBatchCode', DeleteProductionBatch);
+
+// Order Cycle Routes
+router.get('/order-cycle/latest-production-batch/:location', getLatestProductionBatchByLocation);
 
 
 export default router;

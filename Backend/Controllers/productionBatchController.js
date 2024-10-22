@@ -153,9 +153,9 @@ export const updateProductDetailsInBatch = async (req, res) => {
       const { product_code, price, in_stock_quantity } = product;
 
       // Log to verify the incoming data
-      console.log(
-        `Product Code: ${product_code}, Qty: ${in_stock_quantity}, Price: ${price}`
-      );
+      // console.log(
+      //   `Product Code: ${product_code}, Qty: ${in_stock_quantity}, Price: ${price}`
+      // );
 
       // Ensure price and quantity are numbers
       if (isNaN(price) || isNaN(in_stock_quantity)) {
@@ -181,7 +181,7 @@ export const updateProductDetailsInBatch = async (req, res) => {
     // Save the updated batch
     await productionBatch.save();
 
-    console.log("Updated Batch:", productionBatch);
+    //console.log("Updated Batch:", productionBatch);
 
     res.status(200).json({
       message: "Products updated successfully",
@@ -252,6 +252,49 @@ export const getProductionBatchByCode = async (req, res) => {
   } catch (error) {
     console.error("Error fetching production batch:", error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const getLatestProductionBatchByLocation = async (req, res) => {
+  try {
+    const { location } = req.params; // Use location, not location_code
+
+    // Log the location ID for debugging purposes
+    //console.log("Fetching latest batch for location:", location);
+
+    // Ensure the locationId is valid before querying
+    if (!location) {
+      return res.status(400).json({ message: "Location ID is required" });
+    }
+
+    // Find the latest production batch for the specified location
+    const latestBatch = await ProductionBatch.findOne({ location: location })
+      .sort({ createdDate: -1 })
+      .populate("location", "location_name")
+      .populate({
+        path: "selectedProducts.product",
+        select: "product_code product_name", // Fetch only necessary fields
+      })
+      .exec();
+
+    // Check if a production batch was found
+    if (!latestBatch) {
+      console.log("No production batch found for location:", location);
+      return res.status(404).json({
+        message: "No production batch found for this location",
+      });
+    }
+
+    res.status(200).json({
+      message: "Latest production batch fetched successfully",
+      latestBatch,
+    });
+  } catch (error) {
+    console.error("Error fetching latest production batch:", error);
+    res.status(500).json({
+      message: "Failed to fetch latest production batch",
+      error: error.message,
+    });
   }
 };
 

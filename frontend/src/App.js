@@ -10,7 +10,7 @@ import "./i18n";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState("");
-  const [username, setUsername] = useState(""); // Add username state
+ //const [username, setUsername] = useState(""); // Add username state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,13 +21,13 @@ function App() {
     if (token && userRole && storedUsername) {
       setIsAuthenticated(true);
       setRole(userRole);
-      setUsername(storedUsername); // Set username state
+      //setUsername(storedUsername); // Set username state
     }
   }, []);
 
-  // Redirect user based on role
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only navigate when both isAuthenticated and role are valid
+    if (isAuthenticated && role) {
       if (role === "Main Admin") {
         navigate("/mainadmin-dashboard");
       } else if (role === "Company Admin") {
@@ -36,18 +36,16 @@ function App() {
         navigate("/user-dashboard");
       }
     }
-  }, [isAuthenticated, role, navigate]);
+  }, [isAuthenticated, role, navigate]); // Ensure correct dependencies
 
   return (
     <>
-      <div>
+      {/* <div> */}
         {/* Display the username only if the user is authenticated */}
-        {isAuthenticated && (
-          <h1 className="text-lg font-semibold">
-            {`Hello, ${username}`}
-          </h1>
-        )}
-      </div>
+        {/* {isAuthenticated && (
+          <h1 className="text-lg font-semibold">{`Hello, ${username}`}</h1>
+        )} */}
+      {/* </div> */}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="*" element={<DashboardLayout />} />

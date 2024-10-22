@@ -260,8 +260,8 @@ function AddProduct() {
           </div> */}
         </div>
 
-        {toast.error && <p className="text-red-500">{toast.error}</p>}
-        {toast.message && <p className="text-green-500">{toast.message}</p>}
+        {/* {toast.error && <p className="text-red-500">{toast.error}</p>}
+        {toast.message && <p className="text-green-500">{toast.message}</p>} */}
 
         <div className="mt-6 text-right">
           <button

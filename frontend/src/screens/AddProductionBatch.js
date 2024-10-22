@@ -246,7 +246,7 @@ function AddProductionBatch() {
   };
 
   // Handle editing qty and price in the main grid
-  const handleQtyPriceChange = (updatedRow) => {
+  const handleQtyPriceChange = (updatedRow, oldRow) => {
     const updatedBatchProducts = selectedProducts.map((product) => {
       if (product.id === updatedRow.id) {
         return {
