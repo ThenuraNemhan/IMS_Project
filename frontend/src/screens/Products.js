@@ -23,7 +23,7 @@ function Products({ onAddProductClick }) {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/products"
+          "http://192.168.2.48:5000/api/products"
         );
         // Map the products to include an id field
         const productsWithId = response.data.products.map((product) => ({
@@ -40,7 +40,7 @@ function Products({ onAddProductClick }) {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/categories"
+          "http://192.168.2.48:5000/api/categories"
         );
         setCategories(response.data.categories); // Assuming the response has a `categories` field
       } catch (error) {
@@ -51,7 +51,7 @@ function Products({ onAddProductClick }) {
     // Fetch units from the API when the component mounts
     const fetchUnits = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/units");
+        const response = await axios.get("http://192.168.2.48:5000/api/units");
         setUnits(response.data.units); // Assuming the response has a `units` field
       } catch (error) {
         console.error("Error fetching units:", error);
@@ -201,7 +201,7 @@ function Products({ onAddProductClick }) {
   const handleUpdateProduct = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/products/update/${selectedProduct.product_code}`,
+        `http://192.168.2.48:5000/api/products/update/${selectedProduct.product_code}`,
         {
           ...selectedProduct,
           product_category: selectedCategory,
@@ -211,7 +211,7 @@ function Products({ onAddProductClick }) {
       toast.success("Product Updated Succesfully");
       setSelectedProduct(null);
       // Refresh the products list
-      const response = await axios.get("http://192.168.56.1:5000/api/products");
+      const response = await axios.get("http://192.168.2.48:5000/api/products");
       setProducts(response.data.products);
     } catch (error) {
       console.error("Error updating product:", error);
@@ -222,12 +222,12 @@ function Products({ onAddProductClick }) {
   const handleDeleteProduct = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/products/delete/${selectedProduct.product_code}`
+        `http://192.168.2.48:5000/api/products/delete/${selectedProduct.product_code}`
       );
       toast.success("Product Deleted Succesfully");
       setSelectedProduct(null);
       // Refresh the products list
-      const response = await axios.get("http://192.168.56.1:5000/api/products");
+      const response = await axios.get("http://192.168.2.48:5000/api/products");
       setProducts(response.data.products);
     } catch (error) {
       console.error("Error deleting product:", error);

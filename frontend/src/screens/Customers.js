@@ -22,7 +22,7 @@ function Customers({ onAddCustomerClick }) {
     const fetchCustomers = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/customers"
+          "http://192.168.2.48:5000/api/customers"
         );
         // Map the customers to include an id field
         const customersWithId = response.data.customers.map((customer) => ({
@@ -144,7 +144,7 @@ function Customers({ onAddCustomerClick }) {
   const handleUpdateCustomer = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/customers/update/${selectedCustomer.customer_code}`,
+        `http://192.168.2.48:5000/api/customers/update/${selectedCustomer.customer_code}`,
         {
           ...selectedCustomer,
         }
@@ -153,7 +153,7 @@ function Customers({ onAddCustomerClick }) {
       setSelectedCustomer(null);
       // Refresh the customer list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/customers"
+        "http://192.168.2.48:5000/api/customers"
       );
       setCustomers(response.data.customers);
     } catch (error) {
@@ -165,13 +165,13 @@ function Customers({ onAddCustomerClick }) {
   const handleDeleteCustomer = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/customers/delete/${selectedCustomer.customer_code}`
+        `http://192.168.2.48:5000/api/customers/delete/${selectedCustomer.customer_code}`
       );
       toast.success("Customer Deleted Succesfully");
       setSelectedCustomer(null);
       // Refresh the Customer list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/customers"
+        "http://192.168.2.48:5000/api/customers"
       );
       setCustomers(response.data.customers);
     } catch (error) {

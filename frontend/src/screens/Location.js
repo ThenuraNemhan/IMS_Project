@@ -16,7 +16,7 @@ function Location({ onAddLocationClick }) {
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/locations"
+          "http://192.168.2.48:5000/api/locations"
         );
         // Map the locations to include an id field
         const locationsWithId = response.data.locations.map((location) => ({
@@ -87,7 +87,7 @@ function Location({ onAddLocationClick }) {
   const handleUpdateLocation = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/locations/update/${selectedLocation.location_code}`,
+        `http://192.168.2.48:5000/api/locations/update/${selectedLocation.location_code}`,
         {
           ...selectedLocation,
         }
@@ -96,7 +96,7 @@ function Location({ onAddLocationClick }) {
       setSelectedLocation(null);
       // Refresh the Location list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/locations"
+        "http://192.168.2.48:5000/api/locations"
       );
       setLocations(response.data.locations);
     } catch (error) {
@@ -108,13 +108,13 @@ function Location({ onAddLocationClick }) {
   const handleDeleteLocation = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/locations/delete/${selectedLocation.location_code}`
+        `http://192.168.2.48:5000/api/locations/delete/${selectedLocation.location_code}`
       );
       toast.success("Location Deleted Successfully");
       setSelectedLocation(null);
       // Refresh the Location list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/locations"
+        "http://192.168.2.48:5000/api/locations"
       );
       setLocations(response.data.locations);
     } catch (error) {

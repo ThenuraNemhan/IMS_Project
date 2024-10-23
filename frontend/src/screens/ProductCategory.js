@@ -18,7 +18,7 @@ function ProductCateogry({ onAddProductCategoryClick }) {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/categories"
+          "http://192.168.2.48:5000/api/categories"
         );
         // Map the category to include an id field
         const categoryWithId = response.data.categories.map((category) => ({

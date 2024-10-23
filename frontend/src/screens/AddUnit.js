@@ -15,7 +15,7 @@ function AddUnit() {
 
     try {
       const response = await axios.post(
-        "http://192.168.56.1:5000/api/units/add",
+        "http://192.168.2.48:5000/api/units/add",
         { unit_name: unitName }, // Send as JSON
         {
           headers: {

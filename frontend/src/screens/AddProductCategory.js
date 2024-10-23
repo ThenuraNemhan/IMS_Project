@@ -16,7 +16,7 @@ const handleAddCategory = async () => {
 
   try {
     const response = await axios.post(
-      "http://192.168.56.1:5000/api/categories/add",
+      "http://192.168.2.48:5000/api/categories/add",
       { category_name: categoryName }, // Send as JSON
       {
         headers: {

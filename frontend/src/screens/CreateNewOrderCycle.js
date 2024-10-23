@@ -26,7 +26,7 @@ function CreateNewOrderCycle() {
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/locations"
+          "http://192.168.2.48:5000/api/locations"
         );
         setLocations(response.data.locations);
       } catch (error) {
@@ -38,7 +38,7 @@ function CreateNewOrderCycle() {
       const token = localStorage.getItem("token");
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/users/order-cycle-created-user",
+          "http://192.168.2.48:5000/api/users/order-cycle-created-user",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -62,7 +62,7 @@ function CreateNewOrderCycle() {
 
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/orders/order-cycle/latest-cycle-number"
+          "http://192.168.2.48:5000/api/orders/order-cycle/latest-cycle-number"
         );
         const cycleNumber = response.data.nextCycleNumber;
         const code = `OC-${year}-${month}-${cycleNumber}`;
@@ -95,7 +95,7 @@ function CreateNewOrderCycle() {
     try {
       // Fetch the latest production batch for the selected location
       const response = await axios.get(
-        `http://192.168.56.1:5000/api/products/order-cycle/latest-production-batch/${selectedLocation}`
+        `http://192.168.2.48:5000/api/products/order-cycle/latest-production-batch/${selectedLocation}`
       );
 
       const latestBatch = response.data.latestBatch;

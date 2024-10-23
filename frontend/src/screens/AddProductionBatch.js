@@ -23,7 +23,7 @@ function AddProductionBatch() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/products"
+          "http://192.168.2.48:5000/api/products"
         );
         const productsWithId = response.data.products.map((product) => ({
           ...product,
@@ -38,7 +38,7 @@ function AddProductionBatch() {
     const fetchLocations = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/locations"
+          "http://192.168.2.48:5000/api/locations"
         );
         const locationsWithId = response.data.locations.map((location) => ({
           ...location,
@@ -54,7 +54,7 @@ function AddProductionBatch() {
       const token = localStorage.getItem("token"); // Assuming you store the token in local storage
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/users/production-batch-created-user",
+          "http://192.168.2.48:5000/api/users/production-batch-created-user",
           {
             headers: {
               Authorization: `Bearer ${token}`, // Send the token in the header
@@ -82,7 +82,7 @@ function AddProductionBatch() {
       try {
         // Fetch next batch number from the backend
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/products/production-batch/latest-batch-number"
+          "http://192.168.2.48:5000/api/products/production-batch/latest-batch-number"
         );
         const batchNumber = response.data.nextBatchNumber;
 
@@ -129,7 +129,7 @@ function AddProductionBatch() {
 
       // Send data to backend with Authorization header
       const response = await axios.post(
-        "http://192.168.56.1:5000/api/products/production-batch/add",
+        "http://192.168.2.48:5000/api/products/production-batch/add",
         payload,
         {
           headers: {
@@ -198,7 +198,7 @@ function AddProductionBatch() {
     try {
       // Send products to backend
       await axios.post(
-        "http://192.168.56.1:5000/api/products/production-batch/add-products",
+        "http://192.168.2.48:5000/api/products/production-batch/add-products",
         payload
       );
       toast.success("Products added successfully!");
@@ -215,54 +215,70 @@ function AddProductionBatch() {
   const handleSaveBatchProducts = async () => {
     try {
       const payload = {
-        productionBatchCode: productionBatchCode, // Ensure you're using the correct productionBatchCode
-        updatedProducts: selectedProducts.map((product) => ({
-          product_code: product.product_code, // Match the product_code inside the product object
-          in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
-          price: Number(product.price),
-        })),
+          productionBatchCode: productionBatchCode,
+          updatedProducts: selectedProducts.map((product) => {
+              // Ensure you are using the correct property for the product ID
+              const productId = product.product ? product.product._id : product.id; // Adjust this line if needed
+
+              if (!productId) {
+                  throw new Error("Invalid product data, _id is missing.");
+              }
+
+              return {
+                  product_code: productId.toString(), // This should be the identifier you want to use
+                  in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
+                  price: Number(product.price),
+              };
+          }),
       };
 
       console.log("Payload being sent:", payload);
 
       await axios.put(
-        "http://192.168.56.1:5000/api/products/production-batch/update-products",
+        "http://192.168.2.48:5000/api/products/production-batch/update-products",
         payload
       );
 
       toast.success("Batch products updated successfully!");
 
       // Optionally re-fetch the updated batch to ensure the data was updated correctly
-      // const response = await axios.get(
-      //   `http://192.168.56.1:5000/api/products/production-batch/${productionBatchCode}`
-      // );
-      // setSelectedProducts(response.data.updatedBatch.selectedProducts);
+      const fetchResponse = await axios.get(
+        `http://192.168.2.48:5000/api/products/production-batch/${productionBatchCode}`
+      );
+      setSelectedProducts(fetchResponse.data.updatedBatch.selectedProducts);
 
       setSaveEnabled(false); // Disable the save button after saving
     } catch (error) {
       console.error("Error saving batch products:", error);
-      toast.error("Failed to save products");
+      toast.error("Failed to save products:" + error.message);
     }
   };
 
   // Handle editing qty and price in the main grid
-  const handleQtyPriceChange = (updatedRow, oldRow) => {
-    const updatedBatchProducts = selectedProducts.map((product) => {
-      if (product.id === updatedRow.id) {
-        return {
-          ...product,
-          in_stock_quantity: updatedRow.in_stock_quantity,
-          price: updatedRow.price,
-        };
-      }
-      return product;
-    });
+  const handleQtyPriceChange = (updatedRow) => {
+    try {
+      const updatedBatchProducts = selectedProducts.map((product) => {
+        if (product.id === updatedRow.id) {
+          // Ensure you're comparing the correct unique identifier
+          return {
+            ...product,
+            in_stock_quantity: Number(updatedRow.in_stock_quantity),
+            price: Number(updatedRow.price),
+          };
+        }
+        return product;
+      });
 
-    console.log("Updated Batch Products:", updatedBatchProducts);
+      console.log("Updated Batch Products:", updatedBatchProducts);
 
-    setSelectedProducts(updatedBatchProducts); // Ensure state is updated correctly
-    setSaveEnabled(true); // Enable save button
-    return updatedRow;
+      setSelectedProducts(updatedBatchProducts); // Ensure state is updated correctly
+      setSaveEnabled(true); // Enable save button
+      return { ...updatedRow, isNew: false }; // Return the updated row
+    } catch (error) {
+      console.error("Error processing row update:", error);
+      // You might want to throw the error to trigger the onProcessRowUpdateError handler
+      throw error;
+    }
   };
 
   return (
@@ -373,6 +389,10 @@ function AddProductionBatch() {
                 ]}
                 pageSize={5}
                 processRowUpdate={handleQtyPriceChange} // Handle editing in the grid
+                onProcessRowUpdateError={(error) => {
+                  console.error("Row update error:", error); // Log the error for debugging
+                  toast.error("Error updating row: " + error.message); // Show a toast message to the user
+                }}
               />
             </div>
             {/* Display Save button if changes are made */}

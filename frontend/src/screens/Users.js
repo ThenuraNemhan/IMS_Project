@@ -15,7 +15,7 @@ function Users({ onAddUserClick }) {
     // Fetch users from the API when the component mounts
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/users", {
+        const response = await axios.get("http://192.168.2.48:5000/api/users", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -103,7 +103,7 @@ function Users({ onAddUserClick }) {
   const handleUpdateUser = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/users/update/${selectedUser.user_code}`,
+        `http://192.168.2.48:5000/api/users/update/${selectedUser.user_code}`,
         {
           ...selectedUser,
         }
@@ -111,7 +111,7 @@ function Users({ onAddUserClick }) {
       toast.success("User Updated Succesfully");
       setSelectedUser(null);
       // Refresh the User list
-      const response = await axios.get("http://192.168.56.1:5000/api/users");
+      const response = await axios.get("http://192.168.2.48:5000/api/users");
       setUsers(response.data.users);
     } catch (error) {
       console.error("Error updating user:", error);
@@ -122,12 +122,12 @@ function Users({ onAddUserClick }) {
   const handleDeleteUser = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/users/delete/${selectedUser.user_code}`
+        `http://192.168.2.48:5000/api/users/delete/${selectedUser.user_code}`
       );
       toast.success("User Deleted Succesfully");
       setSelectedUser(null);
       // Refresh the User list
-      const response = await axios.get("http://192.168.56.1:5000/api/users");
+      const response = await axios.get("http://192.168.2.48:5000/api/users");
       setUsers(response.data.users);
     } catch (error) {
       console.error("Error deleting user:", error);

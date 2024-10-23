@@ -31,7 +31,7 @@ function AddOrganization() {
       owner_name: organizationOwnerName,
     };
 
-    const apiUrl = "http://192.168.56.1:5000/api/organizations/add";
+    const apiUrl = "http://192.168.2.48:5000/api/organizations/add";
 
     try {
       const response = await axios.post(apiUrl, formData, {

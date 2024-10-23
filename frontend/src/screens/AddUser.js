@@ -45,7 +45,7 @@ function AddUser() {
       role: userRole,
     };
 
-    const apiUrl = "http://192.168.56.1:5000/api/users/register";
+    const apiUrl = "http://192.168.2.48:5000/api/users/register";
 
     try {
       const response = await axios.post(apiUrl, formData, {

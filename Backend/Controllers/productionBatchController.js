@@ -1,4 +1,5 @@
 // controllers/productionBatchController.js
+import mongoose from "mongoose";
 import Location from "../Models/Loactionmodel.js";
 import ProductionBatch from "../Models/ProductionBatchmodel.js";
 import Product from "../Models/Productmodel.js";
@@ -131,57 +132,51 @@ export const updateProductDetailsInBatch = async (req, res) => {
   try {
     const { productionBatchCode, updatedProducts } = req.body;
 
-    // Ensure updatedProducts is an array
     if (!updatedProducts || !Array.isArray(updatedProducts)) {
-      return res
-        .status(400)
-        .json({
-          message: "updatedProducts is required and should be an array",
-        });
+      return res.status(400).json({
+        message: "updatedProducts is required and should be an array",
+      });
     }
 
-    // Find the production batch using productionBatchCode
-    const productionBatch = await ProductionBatch.findOne({
-      productionBatchCode,
-    });
+    const productionBatch = await ProductionBatch.findOne({ productionBatchCode });
+
     if (!productionBatch) {
       return res.status(404).json({ message: "Production batch not found" });
     }
 
-    // Loop through the updated products and update the price and quantity
-    updatedProducts.forEach((product) => {
+    for (const product of updatedProducts) {
       const { product_code, price, in_stock_quantity } = product;
-
-      // Log to verify the incoming data
-      // console.log(
-      //   `Product Code: ${product_code}, Qty: ${in_stock_quantity}, Price: ${price}`
-      // );
 
       // Ensure price and quantity are numbers
       if (isNaN(price) || isNaN(in_stock_quantity)) {
-        return res
-          .status(400)
-          .json({ message: "Invalid price or quantity values" });
+        return res.status(400).json({ message: "Invalid price or quantity values" });
       }
 
-      // Find the product in the batch using product's product_code inside the product object
+      // Find the product in the Product collection using the product_code
+      const productDoc = await Product.findOne({ product_code });
+
+      if (!productDoc) {
+        return res.status(400).json({ message: `Product with code ${product_code} not found` });
+      }
+
+      // Find the product in the batch using its ObjectId
       const productToUpdate = productionBatch.selectedProducts.find(
-        (p) => p.product.product_code === product_code // Match the product_code inside the product object
+        (p) => p.product.toString() === productDoc._id.toString() // Compare ObjectId as strings
       );
 
       if (productToUpdate) {
-        // Update the price and quantity as numbers
+        // Update the price and quantity
         productToUpdate.price = Number(price);
         productToUpdate.in_stock_quantity = Number(in_stock_quantity);
       } else {
         console.log(`Product with code ${product_code} not found in the batch`);
       }
-    });
+    }
 
     // Save the updated batch
     await productionBatch.save();
 
-    //console.log("Updated Batch:", productionBatch);
+    console.log("Updated Batch:", productionBatch);
 
     res.status(200).json({
       message: "Products updated successfully",

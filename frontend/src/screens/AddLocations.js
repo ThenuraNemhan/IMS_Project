@@ -19,7 +19,7 @@ function AddLocation() {
       location_name: locationName,
     };
 
-    const apiUrl = "http://192.168.56.1:5000/api/locations/add";
+    const apiUrl = "http://192.168.2.48:5000/api/locations/add";
 
     try {
       const response = await axios.post(apiUrl, formData, {

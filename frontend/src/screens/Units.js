@@ -17,7 +17,7 @@ function Units({ onAddUnitClick }) {
     // Fetch units from the API when the component mounts
     const fetchUnits = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/units");
+        const response = await axios.get("http://192.168.2.48:5000/api/units");
         // Map the units to include an id field
         const unitsWithId = response.data.units.map((unit) => ({
           ...unit,
@@ -90,7 +90,7 @@ function Units({ onAddUnitClick }) {
   const handleUpdateUnit = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/units/update/${selectedUnit.unit_code}`,
+        `http://192.168.2.48:5000/api/units/update/${selectedUnit.unit_code}`,
         {
           ...selectedUnit,
         }
@@ -98,7 +98,7 @@ function Units({ onAddUnitClick }) {
       toast.success("Unit Updated Succesfully");
       setSelectedUnit(null);
       // Refresh the unit list
-      const response = await axios.get("http://192.168.56.1:5000/api/units");
+      const response = await axios.get("http://192.168.2.48:5000/api/units");
       setUnits(response.data.customers);
     } catch (error) {
       console.error("Error updating units:", error);
@@ -109,12 +109,12 @@ function Units({ onAddUnitClick }) {
   const handleDeleteUnit = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/units/delete/${selectedUnit.unit_code}`
+        `http://192.168.2.48:5000/api/units/delete/${selectedUnit.unit_code}`
       );
       toast.success("Unit Deleted Succesfully");
       setSelectedUnit(null);
       // Refresh the Unit list
-      const response = await axios.get("http://192.168.56.1:5000/api/units");
+      const response = await axios.get("http://192.168.2.48:5000/api/units");
       setUnits(response.data.units);
     } catch (error) {
       console.error("Error deleting unit:", error);

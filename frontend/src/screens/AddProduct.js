@@ -18,7 +18,7 @@ function AddProduct() {
     // Fetch units from the API when the component mounts
     const fetchUnits = async () => {
       try {
-        const response = await axios.get("http://192.168.56.1:5000/api/units");
+        const response = await axios.get("http://192.168.2.48:5000/api/units");
         setUnits(response.data.units); // Assuming the response has a `units` field
       } catch (error) {
         console.error("Error fetching units:", error);
@@ -29,7 +29,7 @@ function AddProduct() {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/categories"
+          "http://192.168.2.48:5000/api/categories"
         );
         setCategories(response.data.categories); // Assuming the response has a `categories` field
       } catch (error) {
@@ -129,7 +129,7 @@ function AddProduct() {
     //   formData.append("images", image);
     // });
 
-    const apiUrl = "http://192.168.56.1:5000/api/products/add";
+    const apiUrl = "http://192.168.2.48:5000/api/products/add";
 
     try {
       const response = await axios.post(apiUrl, formData, {

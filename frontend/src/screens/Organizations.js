@@ -19,7 +19,7 @@ function Organizations({ onAddOrganizationClick }) {
     const fetchOrganizations = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.56.1:5000/api/organizations"
+          "http://192.168.2.48:5000/api/organizations"
         );
         // Map the organization to include an id field
         const organizationsWithId = response.data.organizations.map(
@@ -130,7 +130,7 @@ function Organizations({ onAddOrganizationClick }) {
   const handleUpdateOrganization = async () => {
     try {
       await axios.put(
-        `http://192.168.56.1:5000/api/organizations/update/${selectedOrganization.organization_code}`,
+        `http://192.168.2.48:5000/api/organizations/update/${selectedOrganization.organization_code}`,
         {
           ...selectedOrganization,
         }
@@ -139,7 +139,7 @@ function Organizations({ onAddOrganizationClick }) {
       setSelectedOrganization(null);
       // Refresh the customer list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/organizations"
+        "http://192.168.2.48:5000/api/organizations"
       );
       setOrganizations(response.data.organizations);
     } catch (error) {
@@ -151,13 +151,13 @@ function Organizations({ onAddOrganizationClick }) {
   const handleDeleteOrganization = async () => {
     try {
       await axios.delete(
-        `http://192.168.56.1:5000/api/organizations/delete/${selectedOrganization.organization_code}`
+        `http://192.168.2.48:5000/api/organizations/delete/${selectedOrganization.organization_code}`
       );
       toast.success("Organization Deleted Succesfully");
       setSelectedOrganization(null);
       // Refresh the Organization list
       const response = await axios.get(
-        "http://192.168.56.1:5000/api/organizations"
+        "http://192.168.2.48:5000/api/organizations"
       );
       setOrganizations(response.data.organizations);
     } catch (error) {
