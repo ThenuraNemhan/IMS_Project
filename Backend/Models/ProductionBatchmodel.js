@@ -37,8 +37,7 @@ const ProductionBatchSchema = new mongoose.Schema({
       required: true,
     },
     price: {
-      type: Number,
-      //default: 0,
+      type: mongoose.Schema.Types.Decimal128,
       required: true,
     }
   }],

@@ -28,12 +28,19 @@ export const createProductionBatch = async (req, res) => {
           .json({ message: `Invalid product name: ${product_name}` });
       }
 
+      // Validate price
+      if (price === undefined || price === null || isNaN(price)) {
+        return res
+          .status(400)
+          .json({ message: `Invalid price for product: ${product_name}` });
+      }
+
       // Add product info to the array
       productData.push({
         product: productDoc._id,
         in_stock_quantity:
           typeof in_stock_quantity === "undefined" ? 0 : in_stock_quantity,
-        price: typeof price === "undefined" ? 0 : price,
+        price: mongoose.Types.Decimal128.fromString(price.toString()), // Convert to Decimal128
       });
     }
 
@@ -63,7 +70,15 @@ export const createProductionBatch = async (req, res) => {
     res.status(201).json({
       message: "Production Batch added successfully",
       productionBatchCode: savedProductionBatch.productionBatchCode, // Change this to return the batch code
-      product: populatedProductionBatch,
+      product: {
+        ...populatedProductionBatch._doc,
+        selectedProducts: populatedProductionBatch.selectedProducts.map(
+          (product) => ({
+            ...product._doc,
+            price: product.price ? product.price.toString() : "0",
+          })
+        ),
+      },
     });
   } catch (error) {
     console.error("Error adding production batch:", error);
@@ -101,7 +116,9 @@ export const addProductsToBatch = async (req, res) => {
         product: productDoc._id,
         in_stock_quantity:
           typeof in_stock_quantity === "undefined" ? 0 : in_stock_quantity,
-        price: typeof price === "undefined" ? 0 : price,
+        price: mongoose.Types.Decimal128.fromString(
+          price ? price.toString() : "0"
+        ),
       });
     }
 
@@ -138,7 +155,9 @@ export const updateProductDetailsInBatch = async (req, res) => {
       });
     }
 
-    const productionBatch = await ProductionBatch.findOne({ productionBatchCode });
+    const productionBatch = await ProductionBatch.findOne({
+      productionBatchCode,
+    });
 
     if (!productionBatch) {
       return res.status(404).json({ message: "Production batch not found" });
@@ -147,16 +166,31 @@ export const updateProductDetailsInBatch = async (req, res) => {
     for (const product of updatedProducts) {
       const { product_code, price, in_stock_quantity } = product;
 
+      // Ensure price and quantity are numbers, or set them to defaults
+      const parsedPrice = parseFloat(price);
+      const parsedQuantity = parseInt(in_stock_quantity);
+
       // Ensure price and quantity are numbers
       if (isNaN(price) || isNaN(in_stock_quantity)) {
-        return res.status(400).json({ message: "Invalid price or quantity values" });
+        return res
+          .status(400)
+          .json({ message: "Invalid price or quantity values" });
+      }
+
+      // Validate price
+      if (price === undefined || price === null) {
+        return res
+          .status(400)
+          .json({ message: `Invalid price for product code: ${product_code}` });
       }
 
       // Find the product in the Product collection using the product_code
       const productDoc = await Product.findOne({ product_code });
 
       if (!productDoc) {
-        return res.status(400).json({ message: `Product with code ${product_code} not found` });
+        return res
+          .status(400)
+          .json({ message: `Product with code ${product_code} not found` });
       }
 
       // Find the product in the batch using its ObjectId
@@ -166,8 +200,10 @@ export const updateProductDetailsInBatch = async (req, res) => {
 
       if (productToUpdate) {
         // Update the price and quantity
-        productToUpdate.price = Number(price);
-        productToUpdate.in_stock_quantity = Number(in_stock_quantity);
+        productToUpdate.price = mongoose.Types.Decimal128.fromString(
+          parsedPrice.toString() || "0"
+        );
+        productToUpdate.in_stock_quantity = parsedQuantity || 0;
       } else {
         console.log(`Product with code ${product_code} not found in the batch`);
       }
@@ -176,11 +212,17 @@ export const updateProductDetailsInBatch = async (req, res) => {
     // Save the updated batch
     await productionBatch.save();
 
-    console.log("Updated Batch:", productionBatch);
+    //console.log("Updated Batch:", productionBatch);
 
     res.status(200).json({
       message: "Products updated successfully",
-      updatedBatch: productionBatch,
+      updatedBatch: {
+        ...productionBatch._doc,
+        selectedProducts: productionBatch.selectedProducts.map((product) => ({
+          ...product._doc,
+          price: product.price ? product.price.toString() : "0",
+        })),
+      },
     });
   } catch (error) {
     console.error("Error updating product details:", error);
@@ -209,16 +251,23 @@ export const getProductionBatches = async (req, res) => {
 
 export const getLatestProductionBatchNumber = async (req, res) => {
   try {
+    // Fetch the latest production batch sorted by createdDate
     const latestBatch = await ProductionBatch.findOne({}).sort({
       createdDate: -1,
     });
-    let lastBatchNumber = 1;
+    
+    // Default the batch number to 1 for the first batch
+    let lastBatchNumber = 0;
 
     if (latestBatch && latestBatch.productionBatchCode) {
+      // Split the batch code into parts using "-"
       const codeParts = latestBatch.productionBatchCode.split("-");
-      lastBatchNumber = parseInt(codeParts[3], 10) || 1;
+
+      // Ensure codeParts[3] exists and is a valid number, otherwise fallback to 1
+      lastBatchNumber = parseInt(codeParts[3], 10) || 0;
     }
 
+    // Respond with the next batch number
     res.status(200).json({ nextBatchNumber: lastBatchNumber + 1 });
   } catch (error) {
     res
@@ -226,6 +275,7 @@ export const getLatestProductionBatchNumber = async (req, res) => {
       .json({ message: "Failed to fetch latest batch number", error });
   }
 };
+
 
 export const getProductionBatchByCode = async (req, res) => {
   try {

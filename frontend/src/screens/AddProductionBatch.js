@@ -77,7 +77,7 @@ function AddProductionBatch() {
     const generateBatchCode = async () => {
       const date = new Date();
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const month = String(date.getMonth() + 0).padStart(0, "0");
 
       try {
         // Fetch next batch number from the backend
@@ -163,11 +163,14 @@ function AddProductionBatch() {
   const handleTransferProduct = () => {
     const productToMove = products.find((p) => p.id === selectedProductId);
     if (productToMove) {
-      setSelectedProducts((prev) => [...prev, productToMove]);
+      setSelectedProducts((prev) => [
+        ...prev,
+        { ...productToMove, price: productToMove.price || 0 } // Set default price if undefined
+      ]);
       setProducts(products.filter((p) => p.id !== selectedProductId));
     }
   };
-
+  
   const handleReTransferProduct = () => {
     const productToMoveBack = selectedProducts.find(
       (p) => p.id === selectedProductId
@@ -215,21 +218,21 @@ function AddProductionBatch() {
   const handleSaveBatchProducts = async () => {
     try {
       const payload = {
-          productionBatchCode: productionBatchCode,
-          updatedProducts: selectedProducts.map((product) => {
-              // Ensure you are using the correct property for the product ID
-              const productId = product.product ? product.product._id : product.id; // Adjust this line if needed
+        productionBatchCode: productionBatchCode,
+        updatedProducts: selectedProducts.map((product) => {
+          // Ensure you are using the correct property for the product ID
+          const productId = product.product ? product.product._id : product.id; // Adjust this line if needed
 
-              if (!productId) {
-                  throw new Error("Invalid product data, _id is missing.");
-              }
+          if (!productId) {
+            throw new Error("Invalid product data, _id is missing.");
+          }
 
-              return {
-                  product_code: productId.toString(), // This should be the identifier you want to use
-                  in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
-                  price: Number(product.price),
-              };
-          }),
+          return {
+            product_code: productId.toString(), // This should be the identifier you want to use
+            in_stock_quantity: Number(product.in_stock_quantity), // Ensure this matches backend
+            price: parseFloat(product.price).toFixed(2), // Ensure decimal format for price
+          };
+        }),
       };
 
       console.log("Payload being sent:", payload);
@@ -263,7 +266,7 @@ function AddProductionBatch() {
           return {
             ...product,
             in_stock_quantity: Number(updatedRow.in_stock_quantity),
-            price: Number(updatedRow.price),
+            price: parseFloat(updatedRow.price).toFixed(2), // Convert to decimal with 2 decimal places
           };
         }
         return product;
@@ -378,14 +381,24 @@ function AddProductionBatch() {
                     field: "in_stock_quantity",
                     headerName: "Quantity",
                     width: 150,
-                    editable: true, // Allow editing qty
+                    editable: true, // Allow editing quantity
+                    type: "number", // Ensure the input is numeric
+                    valueParser: (value) => parseFloat(value) || 0, // Handle non-numeric input
                   },
                   {
                     field: "price",
                     headerName: "Price",
                     width: 150,
-                    editable: true, // Allow editing price
-                  },
+                    editable: true,
+                    type: "number",
+                    valueFormatter: (params) => {
+                      const value = params.value;
+                      return value !== undefined && value !== null
+                        ? `LKR${parseFloat(value).toFixed(2)}`
+                        : "LKR 0.00"; // Default to "LKR 0.00" if value is undefined or null
+                    },
+                    valueParser: (value) => parseFloat(value) || 0, // Ensure non-numeric input defaults to 0
+                  }                  
                 ]}
                 pageSize={5}
                 processRowUpdate={handleQtyPriceChange} // Handle editing in the grid

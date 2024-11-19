@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { DataGrid } from "@mui/x-data-grid";
 
 function CreateNewOrderCycle() {
   const [description, setDescription] = useState("");
@@ -58,7 +59,7 @@ function CreateNewOrderCycle() {
     const generateCycleCode = async () => {
       const date = new Date();
       const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const month = String(date.getMonth() + 0).padStart(0, "0");
 
       try {
         const response = await axios.get(
@@ -81,34 +82,79 @@ function CreateNewOrderCycle() {
     }
   }, [currentUser]);
 
-  // Handle form submission
   const handleCreateOrderCycle = async () => {
-    if (!selectedLocation) {
-      toast.error("Please select a location");
+    if (!description || !selectedLocation) {
+      toast.error("All fields are required");
       return;
     }
 
-    //console.log("Selected Location ID:", selectedLocation); // Debugging
-
-    setLoading(true); // Show loading indicator
+    setLoading(true);
 
     try {
+      // Retrieve the token from local storage
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("User is not authenticated");
+        setLoading(false);
+        return;
+      }
       // Fetch the latest production batch for the selected location
       const response = await axios.get(
         `http://192.168.2.48:5000/api/products/order-cycle/latest-production-batch/${selectedLocation}`
       );
 
       const latestBatch = response.data.latestBatch;
+      let batchProducts = [];
 
       if (latestBatch) {
-        setLatestBatchProducts(latestBatch.selectedProducts); // Set the latest products in state
-        setLoading(false); // Hide loading indicator
+        batchProducts = latestBatch.selectedProducts.map((product) => ({
+          product_code: product.product.product_code,
+          latestInStockQuantity: product.in_stock_quantity,
+          latestPrice: product.price.$numberDecimal || product.price,
+        }));
+
+        setLatestBatchProducts(latestBatch.selectedProducts);
         toast.success("Products loaded successfully");
+      } else {
+        toast.info("No production batch found for the selected location");
       }
+
+      // Prepare payload for creating a new order cycle, including createdBy
+      const payload = {
+        orderCycleCode,
+        description,
+        location: selectedLocation,
+        selectedProductionBatches: [
+          {
+            batchCode: latestBatch.productionBatchCode,
+            products: batchProducts,
+          },
+        ],
+        createdBy: currentUser, // Ensure createdBy is set to the current user's ID
+      };
+
+      // Send data to backend with Authorization header
+      const orderCycleResponse = await axios.post(
+        "http://192.168.2.48:5000/api/orders/order-cycle/createNewOrderCycle",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure token is passed correctly
+          },
+        }
+      );
+
+      toast.success("Order Cycle created successfully");
+
+      // Store the batch code to use when adding products
+      const createdCycleCode = orderCycleResponse.data.orderCycleCode; // Get cycle code from response
+      setOrderCycleCode(createdCycleCode); // Set the correct cycle code
     } catch (error) {
-      setLoading(false); // Hide loading indicator
-      console.error("Error fetching products:", error);
-      toast.error("Failed to fetch products");
+      console.error("Error creating order cycle:", error);
+      toast.error("Failed to create order cycle");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -192,32 +238,50 @@ function CreateNewOrderCycle() {
             <h3 className="text-xl font-bold mb-4">
               Latest Products for {getLocationName()} :
             </h3>
-            <table className="w-full border">
-              <thead>
-                <tr>
-                  <th className="border px-4 py-2">Product Code</th>
-                  <th className="border px-4 py-2">Product Name</th>
-                  <th className="border px-4 py-2">Stock Quantity</th>
-                  <th className="border px-4 py-2">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {latestBatchProducts.map((product) => (
-                  <tr key={product.product._id}>
-                    <td className="border px-4 py-2">
-                      {product.product.product_code}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {product.product.product_name}
-                    </td>
-                    <td className="border px-4 py-2">
-                      {product.in_stock_quantity}
-                    </td>
-                    <td className="border px-4 py-2">{product.price}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div style={{ height: 400, width: "100%" }}>
+              <DataGrid
+                rows={latestBatchProducts.map((product) => ({
+                  id: product.product._id, // unique row ID
+                  product_code: product.product.product_code,
+                  product_name: product.product.product_name,
+                  in_stock_quantity: product.in_stock_quantity,
+                  price: parseFloat(
+                    product.price.$numberDecimal || product.price
+                  ),
+                }))}
+                columns={[
+                  {
+                    field: "product_code",
+                    headerName: "Product Code",
+                    width: 150,
+                  },
+                  {
+                    field: "product_name",
+                    headerName: "Product Name",
+                    width: 200,
+                  },
+                  {
+                    field: "in_stock_quantity",
+                    headerName: "Stock Quantity",
+                    width: 150,
+                    type: "number",
+                  },
+                  {
+                    field: "price",
+                    headerName: "Price",
+                    width: 150,
+                    renderCell: (params) => {
+                      const price = parseFloat(params.value);
+                      return isNaN(price)
+                        ? "LKR0.00"
+                        : `LKR${price.toFixed(2)}`; // Format price as currency
+                    },
+                  },
+                ]}
+                pageSize={5}
+                rowsPerPageOptions={[5, 10, 20]}
+              />
+            </div>
           </div>
         )}
       </div>

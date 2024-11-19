@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { FaEye } from "react-icons/fa"; // Import the edit icon
+import { FaEye, FaShareAlt } from "react-icons/fa"; // Import the edit icon
 import axios from "axios";
 import Grid from "../components/Grid"; // Import the Grid component
 import { DataGrid } from "@mui/x-data-grid";
@@ -10,6 +10,7 @@ function OrderCycle({ onAddOrderCycleClick }) {
   const [ordercycle, setOrderCycle] = useState([]);
   const [selectedOrderCycle, setSelectedOrderCycle] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  //const [customers, setCustomers] = useState([]);
   const [selectedSearchField, setSelectedSearchField] = useState("description"); // New state for search field
   const [sort] = useState({ field: "description", direction: "asc" });
 
@@ -18,7 +19,7 @@ function OrderCycle({ onAddOrderCycleClick }) {
     const fetchOrderCycle = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.2.48:5000/api/products/production-batch"
+          "http://192.168.2.48:5000/api/orders/order-cycle/get-all-order-cycles"
         );
         console.log(response.data);
 
@@ -34,8 +35,32 @@ function OrderCycle({ onAddOrderCycleClick }) {
       }
     };
 
+    // const fetchCustomers = async () => {
+    //   try {
+    //     const response = await axios.get(
+    //       "http://192.168.2.48:5000/api/customers"
+    //     );
+    //     setCustomers(response.data.setCustomers);
+    //   } catch (error) {
+    //     console.error("Error fetching customers:", error);
+    //   }
+    // };
+
     fetchOrderCycle();
+    //fetchCustomers();
   }, []);
+
+  useEffect(() => {
+    if (selectedOrderCycle) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Re-enable background scroll
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Reset on unmount
+    };
+  }, [selectedOrderCycle]);
 
   const handleOrderCycleClick = (orderCycle) => {
     console.log("Clicked Order Cycle:", orderCycle); // Log the entire order cycle
@@ -49,15 +74,14 @@ function OrderCycle({ onAddOrderCycleClick }) {
     }
 
     const formattedProducts = Array.isArray(orderCycle.selectedProducts)
-  ? orderCycle.selectedProducts.map((product) => ({
-      id: product.product._id, // Ensure this matches the product ObjectId
-      product_name: product.product.product_name, // Access populated product_name
-      product_code: product.product.product_code, // Access populated product_code
-      quantity: product.in_stock_quantity || 0, // Ensure quantity field exists
-      price: product.price || 0, // Ensure price field exists
-    }))
-  : []; // Fallback to an empty array if products is undefined
-
+      ? orderCycle.selectedProducts.map((product) => ({
+          id: product.product._id, // Ensure this matches the product ObjectId
+          product_name: product.product.product_name, // Access populated product_name
+          product_code: product.product.product_code, // Access populated product_code
+          quantity: product.in_stock_quantity || 0, // Ensure quantity field exists
+          price: product.price || 0, // Ensure price field exists
+        }))
+      : []; // Fallback to an empty array if products is undefined
 
     setSelectedOrderCycle({
       ...orderCycle,
@@ -65,6 +89,32 @@ function OrderCycle({ onAddOrderCycleClick }) {
       location: orderCycle.location?.location_name || "",
       status: orderCycle.status || "Active",
     });
+  };
+
+  const handleShareClick = (orderCycle) => {
+    // console.log("Clicked Order Cycle:", orderCycle); // Log the entire order cycle
+    // // Check if selectedProducts is an array
+    // if (!Array.isArray(orderCycle.selectedProducts)) {
+    //   console.error(
+    //     "Selected Products is not an array:",
+    //     orderCycle.selectedProducts
+    //   );
+    // }
+    // const formattedProducts = Array.isArray(orderCycle.selectedProducts)
+    //   ? orderCycle.selectedProducts.map((product) => ({
+    //       id: product.product._id, // Ensure this matches the product ObjectId
+    //       product_name: product.product.product_name, // Access populated product_name
+    //       product_code: product.product.product_code, // Access populated product_code
+    //       quantity: product.in_stock_quantity || 0, // Ensure quantity field exists
+    //       price: product.price || 0, // Ensure price field exists
+    //     }))
+    //   : []; // Fallback to an empty array if products is undefined
+    // setSelectedOrderCycle({
+    //   ...orderCycle,
+    //   products: formattedProducts, // Format the products properly
+    //   location: orderCycle.location?.location_name || "",
+    //   status: orderCycle.status || "Active",
+    // });
   };
 
   const handleClosePopup = () => {
@@ -85,10 +135,10 @@ function OrderCycle({ onAddOrderCycleClick }) {
             cycle.createdBy &&
             cycle.createdBy.toLowerCase().includes(searchTerm.toLowerCase())
           );
-        case "productionBatchCode":
+        case "orderCycleCode":
           return (
-            cycle.productionBatchCode &&
-            cycle.productionBatchCode
+            cycle.orderCycleCode &&
+            cycle.orderCycleCode
               .toLowerCase()
               .includes(searchTerm.toLowerCase())
           );
@@ -130,17 +180,44 @@ function OrderCycle({ onAddOrderCycleClick }) {
       ),
     },
     {
+      field: "status",
+      headerName: "Status",
+      width: 100,
+      renderCell: (params) => {
+        const status = params.row.status;
+        const statusClass =
+          status === "Active"
+            ? "bg-green-500 text-white"
+            : "bg-red-500 text-white";
+
+        return (
+          <span className={`px-2 py-1 rounded-sm ${statusClass}`}>
+            {status}
+          </span>
+        );
+      },
+    },
+    {
       field: "action",
       headerName: "Action",
       width: 150,
       renderCell: (params) => (
-        <div className="flex justify-center items-center w-full h-full">
+        <div className="flex justify-center items-center gap-2 w-full h-full">
+          {" "}
+          {/* gap-2 adds space between elements */}
           <button
             onClick={() => handleOrderCycleClick(params.row)}
-            className="bg-yellow-500 text-white p-2  flex items-center justify-center"
-            style={{ width: "40px", height: "40px" }} // Set fixed size for the icon button
+            className="bg-yellow-500 text-white p-2 flex items-center justify-center"
+            style={{ width: "30px", height: "30px" }}
           >
             <FaEye className="text-white" />
+          </button>
+          <button
+            onClick={() => handleShareClick(params.row)}
+            className="bg-blue-300 text-white p-2 flex items-center justify-center"
+            style={{ width: "30px", height: "30px" }}
+          >
+            <FaShareAlt className="text-white" />
           </button>
         </div>
       ),
@@ -172,7 +249,7 @@ function OrderCycle({ onAddOrderCycleClick }) {
                 <option value="description">Description</option>
                 <option value="createdBy">Created By</option>
                 <option value="location">Location</option>
-                <option value="productionBatchCode">Batch Code</option>
+                <option value="orderCycleCode">Cycle Code</option>
               </select>
             </div>
 
@@ -197,8 +274,14 @@ function OrderCycle({ onAddOrderCycleClick }) {
 
         {/* Popup for Order Cycle Details */}
         {selectedOrderCycle && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full md:w-2/3 lg:w-1/2 relative">
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50"
+            style={{ overflowY: "auto" }}
+          >
+            <div
+              className="bg-white p-8 rounded-lg shadow-lg w-full md:w-2/3 lg:w-1/2 relative max-h-[90vh] overflow-y-auto"
+              style={{ maxHeight: "90vh", overflowY: "auto" }}
+            >
               <button
                 onClick={handleClosePopup}
                 className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 flex justify-center items-center rounded-sm hover:bg-red-700"
@@ -225,7 +308,9 @@ function OrderCycle({ onAddOrderCycleClick }) {
 
                 {/* Order Cycle Location */}
                 <div className="mb-4">
-                  <label className="block text-gray-700">Order Cycle Location</label>
+                  <label className="block text-gray-700">
+                    Order Cycle Location
+                  </label>
                   <input
                     type="text"
                     value={selectedOrderCycle.location}
@@ -260,14 +345,45 @@ function OrderCycle({ onAddOrderCycleClick }) {
                   />
                 </div>
 
+                {/* Status Dropdown */}
+                <div className="mb-4">
+                  <label className="block text-gray-700">Status</label>
+                  <select
+                    value={selectedOrderCycle.status}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                    onChange={(e) =>
+                      setSelectedOrderCycle({
+                        ...selectedOrderCycle,
+                        status: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+
                 {/* Selected Orders Grid */}
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-2">
-                    Order Cycle Selected Products
+                    Order Cycle Selected Production Batch Details
                   </h3>
                   <div style={{ height: 400, width: "100%" }}>
                     <DataGrid
-                      rows={selectedOrderCycle?.products || []} // Use the products from selectedProductionBatch
+                      rows={
+                        // Flatten production batches to get products with needed fields
+                        selectedOrderCycle?.selectedProductionBatches?.flatMap(
+                          (batch) =>
+                            batch.products.map((product) => ({
+                              id: product.product._id, // Unique identifier for each row
+                              product_code: product.product.product_code,
+                              product_name: product.product.product_name,
+                              quantity: product.latestInStockQuantity || 0,
+                              price: product.latestPrice || 0,
+                            }))
+                        ) || []
+                      }
                       columns={[
                         { field: "product_code", headerName: "ID", width: 100 },
                         {

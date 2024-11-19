@@ -49,12 +49,18 @@ const Sidebar = ({ onContentChange }) => {
   };
 
   const handleLogout = () => {
-    // Clear local storage and navigate to login page
+    // Clear local storage
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     localStorage.removeItem("role");
-    navigate("/login");
+  
+    // Optionally clear any global state if you're using something like Redux or Context
+    // dispatch(clearUser()); // Example in Redux or Context API
+  
+    // Navigate to login page
+    navigate("/login", { replace: true }); // 'replace: true' ensures no history of the current page remains
   };
+  
 
   return (
     <div className="w-64 bg-gray-800 text-white flex-shrink-0 overflow-y-auto">

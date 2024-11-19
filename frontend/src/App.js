@@ -10,20 +10,20 @@ import "./i18n";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState("");
- //const [username, setUsername] = useState(""); // Add username state
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userRole = localStorage.getItem("role");
-    const storedUsername = localStorage.getItem("username"); // Get username
 
-    if (token && userRole && storedUsername) {
+    if (token && userRole) {
       setIsAuthenticated(true);
       setRole(userRole);
-      //setUsername(storedUsername); // Set username state
+    } else {
+      setIsAuthenticated(false);
+      navigate("/login"); // Redirect to login if not authenticated
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     // Only navigate when both isAuthenticated and role are valid
@@ -36,18 +36,12 @@ function App() {
         navigate("/user-dashboard");
       }
     }
-  }, [isAuthenticated, role, navigate]); // Ensure correct dependencies
+  }, [isAuthenticated, role, navigate]);
 
   return (
     <>
-      {/* <div> */}
-        {/* Display the username only if the user is authenticated */}
-        {/* {isAuthenticated && (
-          <h1 className="text-lg font-semibold">{`Hello, ${username}`}</h1>
-        )} */}
-      {/* </div> */}
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="*" element={<DashboardLayout />} />
       </Routes>
       <ToastContainer

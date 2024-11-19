@@ -37,6 +37,18 @@ function ProductBatch({ onAddProductBatchClick }) {
     fetchProductionBatch();
   }, []);
 
+  useEffect(() => {
+    if (selectedProductionBatch) {
+      document.body.style.overflow = "hidden"; // Disable background scroll
+    } else {
+      document.body.style.overflow = "auto"; // Re-enable background scroll
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"; // Reset on unmount
+    };
+  }, [selectedProductionBatch]);
+
   const handleProductionBatchClick = (productionBatch) => {
     console.log("Clicked Production Batch:", productionBatch); // Log the entire production batch
 
@@ -49,15 +61,14 @@ function ProductBatch({ onAddProductBatchClick }) {
     }
 
     const formattedProducts = Array.isArray(productionBatch.selectedProducts)
-  ? productionBatch.selectedProducts.map((product) => ({
-      id: product.product._id, // Ensure this matches the product ObjectId
-      product_name: product.product.product_name, // Access populated product_name
-      product_code: product.product.product_code, // Access populated product_code
-      quantity: product.in_stock_quantity || 0, // Ensure quantity field exists
-      price: product.price || 0, // Ensure price field exists
-    }))
-  : []; // Fallback to an empty array if products is undefined
-
+      ? productionBatch.selectedProducts.map((product) => ({
+          id: product.product._id, // Ensure this matches the product ObjectId
+          product_name: product.product.product_name, // Access populated product_name
+          product_code: product.product.product_code, // Access populated product_code
+          quantity: product.in_stock_quantity || 0, // Ensure quantity field exists
+          price: product.price ? parseFloat(product.price) : 0, // Convert price to a number
+        }))
+      : []; // Fallback to an empty array if products is undefined
 
     setSelectedProductionBatch({
       ...productionBatch,
@@ -138,7 +149,7 @@ function ProductBatch({ onAddProductBatchClick }) {
           <button
             onClick={() => handleProductionBatchClick(params.row)}
             className="bg-yellow-500 text-white p-2  flex items-center justify-center"
-            style={{ width: "40px", height: "40px" }} // Set fixed size for the icon button
+            style={{ width: "30px", height: "30px" }} // Set fixed size for the icon button
           >
             <FaEye className="text-white" />
           </button>
@@ -197,8 +208,14 @@ function ProductBatch({ onAddProductBatchClick }) {
 
         {/* Popup for Production Batch Details */}
         {selectedProductionBatch && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full md:w-2/3 lg:w-1/2 relative">
+          <div
+            className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50"
+            style={{ overflowY: "auto" }}
+          >
+            <div
+              className="bg-white p-8 rounded-lg shadow-lg w-full md:w-2/3 lg:w-1/2 relative max-h-[90vh] overflow-y-auto"
+              style={{ maxHeight: "90vh", overflowY: "auto" }}
+            >
               <button
                 onClick={handleClosePopup}
                 className="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 flex justify-center items-center rounded-sm hover:bg-red-700"
@@ -280,7 +297,19 @@ function ProductBatch({ onAddProductBatchClick }) {
                           headerName: "Quantity",
                           width: 150,
                         },
-                        { field: "price", headerName: "Price", width: 150 },
+                        {
+                          field: "price",
+                          headerName: "Price",
+                          width: 150,
+                          renderCell: (params) => {
+                            const price = parseFloat(
+                              params.value?.$numberDecimal || params.value
+                            );
+                            return isNaN(price)
+                              ? "LKR0.00"
+                              : `LKR${price.toFixed(2)}`;
+                          },
+                        },
                       ]}
                       pageSize={5}
                     />
